@@ -8,37 +8,37 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
-use IndexNowKit\Attribute\AttributeReaderInterface;
-use IndexNowKit\Attribute\ChangeClassifier;
-use IndexNowKit\Attribute\IndexNow as IndexNowAttribute;
-use IndexNowKit\Transaction\TransactionStaging;
+use Doctrine\ORM\PersistentCollection;
+use IndexNowKit\Attribute\RuleEvent;
 use IndexNowKit\Event;
 use IndexNowKit\IndexNowKit;
+use IndexNowKit\Transaction\TransactionStaging;
 use IndexNowKit\Url\GuardedUrlResolver;
+use IndexNowKit\Url\ObjectChangeHandler;
+use IndexNowKit\Url\ResolvedUrl;
 use IndexNowKit\Url\UrlResolverInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Throwable;
 
 /**
- * Collects changed entities in onFlush, resolves URLs in postFlush (ids assigned), hands them over
- * only once the outermost transaction committed.
+ * Classifies changed entities per URL rule in onFlush, resolves URLs in postFlush (ids assigned) — deletions
+ * and pages that stopped applying are resolved in onFlush while the old state is live — and hands the URLs
+ * over only once the outermost transaction committed.
  */
 final class IndexNowListener
 {
     public const EVENTS = [Events::onFlush, Events::postFlush];
 
-    /** @var list<array{0: object, 1: Event}> */
-    private array $pendingEntities = [];
+    /** @var list<array{0: object, 1: RuleEvent}> resolved in postFlush */
+    private array $pending = [];
 
-    /** @var list<string> URLs already resolved (deletions) */
-    private array $pendingUrls = [];
+    /** @var list<ResolvedUrl> already resolved (deletions) */
+    private array $resolved = [];
 
-    private readonly AttributeReaderInterface $reader;
-    private readonly GuardedUrlResolver $resolver;
+    private readonly ObjectChangeHandler $changes;
 
     /**
-     * @param UrlResolverInterface|null $resolver  defaults to the facade's resolver (IndexNowKit::resolver())
+     * @param UrlResolverInterface|null $resolver  defaults to the facade's resolver
      * @param bool                      $autoFlush call IndexNowKit::flush() right after hand-off (standalone usage); adapters flush at request end
      */
     public function __construct(
@@ -48,60 +48,69 @@ final class IndexNowListener
         private readonly LoggerInterface $logger = new NullLogger(),
         private readonly bool $autoFlush = false,
     ) {
-        $this->reader = $indexNow->attributes;
-        $this->resolver = $resolver === null ? $indexNow->resolver() : new GuardedUrlResolver($resolver, $indexNow->attributes, $logger);
+        $this->changes = $resolver === null
+            ? $indexNow->changes()
+            : new ObjectChangeHandler($indexNow->attributes, $resolver instanceof GuardedUrlResolver ? $resolver : new GuardedUrlResolver($resolver, $indexNow->attributes, $logger), $logger);
     }
 
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $em = $args->getObjectManager();
-        $uow = $em->getUnitOfWork();
-        $this->pendingEntities = [];
-        $this->pendingUrls = [];
+        $uow = $args->getObjectManager()->getUnitOfWork();
+        $this->pending = [];
+        $this->resolved = [];
 
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
-            $attribute = $this->safeRead($entity);
-            if ($attribute !== null && $attribute->listensTo(Event::Created)) {
-                $this->pendingEntities[] = [$entity, Event::Created];
-            }
+            $this->defer($entity, $this->changes->createdEvents($entity));
         }
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
-            $attribute = $this->safeRead($entity);
-            if ($attribute === null) {
-                continue;
-            }
             /** @var array<string, array{0: mixed, 1: mixed}> $changeSet */
             $changeSet = $uow->getEntityChangeSet($entity);
-            $event = self::classifyUpdate($attribute, $changeSet);
-            if ($event === Event::Deleted) {
-                $this->resolveNow($entity, Event::Deleted);
-            } elseif ($event !== null) {
-                $this->pendingEntities[] = [$entity, $event];
+            foreach ($this->changes->updatedEvents($entity, array_keys($changeSet), $changeSet) as $ruleEvent) {
+                if ($ruleEvent->event === Event::Deleted) {
+                    $this->resolveNow($entity, $ruleEvent);
+                } else {
+                    $this->pending[] = [$entity, $ruleEvent];
+                }
             }
         }
 
+        // A changed to-many association (post <-> tags) is not part of the owner's change set.
+        foreach ([...$uow->getScheduledCollectionUpdates(), ...$uow->getScheduledCollectionDeletions()] as $collection) {
+            if (!$collection instanceof PersistentCollection) {
+                continue;
+            }
+            $owner = $collection->getOwner();
+            $field = self::fieldName($collection);
+            if ($owner === null || $field === null) {
+                continue;
+            }
+            $this->defer($owner, $this->changes->updatedEvents($owner, [$field]));
+        }
+
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
-            $attribute = $this->safeRead($entity);
-            if ($attribute !== null && $attribute->listensTo(Event::Deleted)) {
-                $this->resolveNow($entity, Event::Deleted);
+            foreach ($this->changes->deletedEvents($entity) as $ruleEvent) {
+                $this->resolveNow($entity, $ruleEvent);
             }
         }
     }
 
     public function postFlush(PostFlushEventArgs $args): void
     {
-        $urls = $this->pendingUrls;
-        foreach ($this->pendingEntities as [$entity, $event]) {
-            $urls = [...$urls, ...$this->resolver->resolve($entity, $event)];
+        $resolved = $this->resolved;
+        foreach ($this->pending as [$entity, $ruleEvent]) {
+            $resolved = [...$resolved, ...$this->changes->resolve($entity, $ruleEvent)];
         }
-        $this->pendingEntities = [];
-        $this->pendingUrls = [];
+        $this->pending = [];
+        $this->resolved = [];
 
-        if ($urls === []) {
+        if ($resolved === []) {
             return;
         }
-        $this->handOff($args->getObjectManager(), array_values(array_unique($urls)));
+        foreach ($resolved as $item) {
+            $this->logger->debug('indexnow: {source} ({event}) -> {url}', ['source' => $item->source(), 'event' => $item->event->value, 'url' => $item->url]);
+        }
+        $this->handOff($args->getObjectManager(), ResolvedUrl::urls($resolved));
     }
 
     /**
@@ -134,31 +143,32 @@ final class IndexNowListener
     }
 
     /**
-     * An invalid #[IndexNow] (no route/resolver, unknown event) must not break the flush of unrelated entities.
+     * @param list<RuleEvent> $ruleEvents
      */
-    private function safeRead(object $entity): ?IndexNowAttribute
+    private function defer(object $entity, array $ruleEvents): void
     {
-        try {
-            return $this->reader->read($entity);
-        } catch (Throwable $e) {
-            $this->logger->error('indexnow: invalid #[IndexNow] on {class}: {error}', ['class' => $entity::class, 'error' => $e->getMessage(), 'exception' => $e]);
-
-            return null;
+        foreach ($ruleEvents as $ruleEvent) {
+            $this->pending[] = [$entity, $ruleEvent];
         }
     }
 
-    private function resolveNow(object $entity, Event $event): void
+    private function resolveNow(object $entity, RuleEvent $ruleEvent): void
     {
-        $this->pendingUrls = [...$this->pendingUrls, ...$this->resolver->resolve($entity, $event)];
+        $this->resolved = [...$this->resolved, ...$this->changes->resolve($entity, $ruleEvent)];
     }
 
     /**
-     * @param array<string, array{0: mixed, 1: mixed}> $changeSet
+     * @param PersistentCollection<int|string, object> $collection
      */
-    private static function classifyUpdate(IndexNowAttribute $attribute, array $changeSet): ?Event
+    private static function fieldName(PersistentCollection $collection): ?string
     {
-        $whenChange = $attribute->when !== null && isset($changeSet[$attribute->when]) ? $changeSet[$attribute->when] : null;
+        // ORM 2: array, ORM 3: AssociationMapping object with a public $fieldName; both are iterable key => value.
+        $vars = [];
+        foreach ($collection->getMapping() as $key => $value) { // @phpstan-ignore foreach.nonIterable
+            $vars[$key] = $value;
+        }
+        $field = $vars['fieldName'] ?? null;
 
-        return ChangeClassifier::classify($attribute, array_keys($changeSet), $whenChange);
+        return \is_string($field) ? $field : null;
     }
 }

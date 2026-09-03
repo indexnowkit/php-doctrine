@@ -6,7 +6,11 @@ namespace IndexNowKit\Doctrine\Tests;
 
 use IndexNowKit\Doctrine\Tests\Fixtures\BadAttribute;
 use IndexNowKit\Doctrine\Tests\Fixtures\Broken;
+use IndexNowKit\Doctrine\Tests\Fixtures\CategorizedPost;
+use IndexNowKit\Doctrine\Tests\Fixtures\Category;
+use IndexNowKit\Doctrine\Tests\Fixtures\MultiPost;
 use IndexNowKit\Doctrine\Tests\Fixtures\Post;
+use IndexNowKit\Doctrine\Tests\Fixtures\Tag;
 use IndexNowKit\Doctrine\Tests\Fixtures\Untracked;
 use IndexNowKit\Http\Response;
 use PHPUnit\Framework\Attributes\TestDox;
@@ -230,5 +234,105 @@ final class OrmConformanceTest extends DoctrineTestCase
 
         $this->indexNow->flush();
         self::assertSame(['https://www.example.com/posts/later'], $this->sentUrls());
+    }
+
+    #[TestDox('A15 multi-rule entity submits every applicable URL on create')]
+    public function testA15MultiRuleEntitySubmitsAllApplicableUrls(): void
+    {
+        $this->em->persist(new MultiPost('multi', published: true, amp: true));
+        $this->em->flush();
+
+        self::assertEqualsCanonicalizing([
+            'https://www.example.com/posts/multi',
+            'https://www.example.com/amp/multi',
+            'https://www.example.com/',
+        ], $this->sentUrls());
+    }
+
+    #[TestDox('A16 amp true -> false submits the AMP URL as deletion while post_show (and the filter-less homepage rule) still get an update, in the same flush')]
+    public function testA16AmpToggleSubmitsAmpDeletionAndPostShowUpdate(): void
+    {
+        $post = new MultiPost('withamp', published: true, amp: true);
+        $this->em->persist($post);
+        $this->em->flush();
+
+        $post->amp = false;
+        $this->em->flush();
+
+        self::assertCount(2, $this->transport->posts, 'one POST per flush');
+        $secondBatch = $this->transport->posts[1]['body']['urlList'];
+        self::assertEqualsCanonicalizing([
+            'https://www.example.com/amp/withamp',
+            'https://www.example.com/posts/withamp',
+            'https://www.example.com/',
+        ], $secondBatch, 'the AMP page is resolved as a deletion despite `when` now being false; post_show and the homepage (no fields filter) resubmit as updates; nothing else');
+    }
+
+    #[TestDox('A17 unpublish through a getter-named `when` (isPublished() over $published) submits the deletion (the historic field-name-vs-accessor mismatch bug is fixed, and Deleted resolves despite `when` now being false)')]
+    public function testA17UnpublishThroughAGetterNamedWhenSubmitsTheDeletion(): void
+    {
+        $post = new MultiPost('viageter', published: true, amp: false);
+        $this->em->persist($post);
+        $this->em->flush();
+        self::assertEqualsCanonicalizing(['https://www.example.com/posts/viageter', 'https://www.example.com/'], $this->sentUrls());
+
+        $post->published = false;
+        $this->em->flush();
+
+        self::assertCount(2, $this->transport->posts, 'one POST per flush');
+        self::assertEqualsCanonicalizing(
+            ['https://www.example.com/posts/viageter', 'https://www.example.com/'],
+            $this->transport->posts[1]['body']['urlList'],
+            'both rules whose `when` depends on isPublished() are resubmitted as deletions',
+        );
+    }
+
+    #[TestDox('A18 deleting a draft (when already false) submits nothing, neither on create nor on delete')]
+    public function testA18DeletingADraftSubmitsNothing(): void
+    {
+        $post = new MultiPost('neverpublished', published: false, amp: false);
+        $this->em->persist($post);
+        $this->em->flush();
+        self::assertSame([], $this->sentUrls(), 'draft creation: no rule applies');
+
+        $this->em->remove($post);
+        $this->em->flush();
+        self::assertSame([], $this->sentUrls(), 'draft deletion: it was never public, nothing to signal');
+    }
+
+    #[TestDox('A19 via a ManyToOne relation resubmits the category page, on create and on a later update')]
+    public function testA19ViaRelationResubmitsTheCategoryPage(): void
+    {
+        $category = new Category('news');
+        $post = new CategorizedPost('story');
+        $post->category = $category;
+        $this->em->persist($category);
+        $this->em->persist($post);
+        $this->em->flush();
+
+        self::assertContains('https://www.example.com/categories/news', $this->sentUrls());
+        $firstCount = \count($this->sentUrls());
+
+        $post->views = 1;
+        $this->em->flush();
+
+        self::assertGreaterThan($firstCount, \count($this->sentUrls()), 'the category page resubmits again on an unrelated field update');
+    }
+
+    #[TestDox('A20 adding a tag (ManyToMany) is not part of the change set but still triggers an update')]
+    public function testA20CollectionChangeTriggersAnUpdate(): void
+    {
+        $post = new CategorizedPost('tagged');
+        $this->em->persist($post);
+        $this->em->flush();
+        self::assertSame(['https://www.example.com/posts/tagged'], $this->sentUrls());
+
+        $tag = new Tag('news');
+        $this->em->persist($tag);
+        $post->tags->add($tag);
+        $this->em->flush();
+
+        self::assertCount(2, $this->transport->posts, 'the collection update triggers a second flush-worth of submission');
+        self::assertSame(['https://www.example.com/posts/tagged'], $this->transport->posts[1]['body']['urlList']);
     }
 }
