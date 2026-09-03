@@ -3,6 +3,14 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [Unreleased]
+
+### Changed
+
+- Requires `indexnowkit/core ^0.2.2`. The test suite runs the shared ORM conformance kit
+  (`IndexNowKit\Testing\Conformance\OrmConformanceTestCase`, A01–A21 including the renamed-page scenario A21) through
+  a Doctrine driver; Doctrine-specific behaviour stays in `tests/ListenerTest.php`. No runtime change.
+
 ## [0.2.0] — 2026-09-04
 
 ### Added
