@@ -8,16 +8,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
-use IndexNowKit\Attribute\AttributeReader;
+use IndexNowKit\Attribute\AttributeReaderInterface;
 use IndexNowKit\Attribute\IndexNow as IndexNowAttribute;
 use IndexNowKit\Doctrine\Transaction\TransactionStaging;
+use IndexNowKit\Event;
 use IndexNowKit\IndexNow;
-use IndexNowKit\Url\Event;
-use IndexNowKit\Url\PublishGuard;
+use IndexNowKit\Url\GuardedUrlResolver;
 use IndexNowKit\Url\UrlResolverInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Throwable;
 
 /**
  * Collects changed entities in onFlush, resolves URLs in postFlush (ids assigned), hands them over
@@ -33,19 +32,21 @@ final class IndexNowListener
     /** @var list<string> URLs already resolved (deletions) */
     private array $pendingUrls = [];
 
-    private readonly AttributeReader $reader;
+    private readonly AttributeReaderInterface $reader;
+    private readonly GuardedUrlResolver $resolver;
 
     /**
      * @param bool $autoFlush call IndexNow::flush() right after hand-off (standalone usage); adapters flush at request end
      */
     public function __construct(
         private readonly IndexNow $indexNow,
-        private readonly UrlResolverInterface $resolver,
+        UrlResolverInterface $resolver,
         private readonly TransactionStaging $staging,
         private readonly LoggerInterface $logger = new NullLogger(),
         private readonly bool $autoFlush = false,
     ) {
         $this->reader = $indexNow->attributes;
+        $this->resolver = new GuardedUrlResolver($resolver, $indexNow->attributes, $logger);
     }
 
     public function onFlush(OnFlushEventArgs $args): void
@@ -89,11 +90,7 @@ final class IndexNowListener
     {
         $urls = $this->pendingUrls;
         foreach ($this->pendingEntities as [$entity, $event]) {
-            $attribute = $this->reader->read($entity);
-            if ($attribute === null || !PublishGuard::isPublished($entity, $attribute)) {
-                continue;
-            }
-            $urls = [...$urls, ...$this->safeResolve($entity, $event)];
+            $urls = [...$urls, ...$this->resolver->resolve($entity, $event)];
         }
         $this->pendingEntities = [];
         $this->pendingUrls = [];
@@ -135,26 +132,7 @@ final class IndexNowListener
 
     private function resolveNow(object $entity, Event $event): void
     {
-        $this->pendingUrls = [...$this->pendingUrls, ...$this->safeResolve($entity, $event)];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function safeResolve(object $entity, Event $event): array
-    {
-        try {
-            $urls = [];
-            foreach ($this->resolver->resolve($entity, $event) as $url) {
-                $urls[] = $url;
-            }
-
-            return $urls;
-        } catch (Throwable $e) {
-            $this->logger->error('indexnow: cannot resolve URL for {class} ({event}): {error}', ['class' => $entity::class, 'event' => $event->value, 'error' => $e->getMessage(), 'exception' => $e]);
-
-            return [];
-        }
+        $this->pendingUrls = [...$this->pendingUrls, ...$this->resolver->resolve($entity, $event)];
     }
 
     /**
