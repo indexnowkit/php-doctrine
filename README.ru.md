@@ -8,7 +8,7 @@ Doctrine ORM 2.19+ и 3.x, DBAL 3.x и 4.x, PHP 8.2+.
 
 [English version](README.md)
 
-**Пользователям Symfony: берите [`indexnowkit/symfony-bundle`](../symfony-bundle)** — он собирает всё это сам,
+**Пользователям Symfony: берите [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — он собирает всё это сам,
 добавляет мост к роутеру, команды и панель профайлера. Этот пакет — для Doctrine без Symfony.
 
 ## Установка
@@ -73,7 +73,7 @@ class Post
 ```
 
 Полная модель — источники, типизированные параметры, `when` / `whenFields` / `fields` / `events` / `locales` /
-`host`, наследование и таблица семантики — в [справочнике по атрибутам](../core/docs/attribute-reference.md).
+`host`, наследование и таблица семантики — в [справочнике по атрибутам](https://github.com/indexnowkit/php/blob/main/packages/core/docs/attribute-reference.md).
 
 ### Маршруты
 
@@ -138,12 +138,12 @@ class Post
 
 | | |
 |---|---|
-| Справочник по атрибутам | [core/docs/attribute-reference.md](../core/docs/attribute-reference.md) |
-| Конфигурация | [core/docs/configuration.md](../core/docs/configuration.md) |
-| Эксплуатация и логи | [core/docs/operations.md](../core/docs/operations.md) |
-| Тестирование | [core/docs/testing.md](../core/docs/testing.md) |
-| Как написать свой адаптер | [core/docs/adapters.md](../core/docs/adapters.md) |
-| Обоснование архитектуры | [docs/spec](../../../docs/spec) |
+| Справочник по атрибутам | [core/docs/attribute-reference.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/attribute-reference.md) |
+| Конфигурация | [core/docs/configuration.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/configuration.md) |
+| Эксплуатация и логи | [core/docs/operations.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/operations.md) |
+| Тестирование | [core/docs/testing.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/testing.md) |
+| Как написать свой адаптер | [core/docs/adapters.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/adapters.md) |
+| Обоснование архитектуры | [docs/spec](https://github.com/indexnowkit/php/tree/main/docs/spec) |
 
 Changelog: [CHANGELOG.md](CHANGELOG.md). Версионирование: SemVer; до 1.0 минорные версии могут ломать совместимость.
 

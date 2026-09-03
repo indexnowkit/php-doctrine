@@ -8,7 +8,7 @@ Doctrine ORM 2.19+ and 3.x, DBAL 3.x and 4.x, PHP 8.2+.
 
 [Русская версия](README.ru.md)
 
-**Symfony users: take [`indexnowkit/symfony-bundle`](../symfony-bundle)** — it wires all of this, adds the router
+**Symfony users: take [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — it wires all of this, adds the router
 bridge, the commands and the profiler panel. This package is for Doctrine without Symfony.
 
 ## Install
@@ -75,7 +75,7 @@ class Post
 
 Full model — sources, typed parameters, `when` / `whenFields` / `fields` / `events` / `locales` / `host`,
 inheritance and the semantics table — is in the core's
-[attribute reference](../core/docs/attribute-reference.md).
+[attribute reference](https://github.com/indexnowkit/php/blob/main/packages/core/docs/attribute-reference.md).
 
 ### Routes
 
@@ -139,12 +139,12 @@ this reason.
 
 | | |
 |---|---|
-| Attribute reference | [core/docs/attribute-reference.md](../core/docs/attribute-reference.md) |
-| Configuration | [core/docs/configuration.md](../core/docs/configuration.md) |
-| Operations and logging | [core/docs/operations.md](../core/docs/operations.md) |
-| Testing | [core/docs/testing.md](../core/docs/testing.md) |
-| Writing your own adapter | [core/docs/adapters.md](../core/docs/adapters.md) |
-| Design rationale | [docs/spec](../../../docs/spec) |
+| Attribute reference | [core/docs/attribute-reference.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/attribute-reference.md) |
+| Configuration | [core/docs/configuration.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/configuration.md) |
+| Operations and logging | [core/docs/operations.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/operations.md) |
+| Testing | [core/docs/testing.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/testing.md) |
+| Writing your own adapter | [core/docs/adapters.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/adapters.md) |
+| Design rationale | [docs/spec](https://github.com/indexnowkit/php/tree/main/docs/spec) |
 
 Changelog: [CHANGELOG.md](CHANGELOG.md). Versioning: SemVer; before 1.0 minor versions may break.
 
