@@ -66,6 +66,7 @@ final class IndexNowListener
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             /** @var array<string, array{0: mixed, 1: mixed}> $changeSet */
             $changeSet = $uow->getEntityChangeSet($entity);
+            $this->resolved = [...$this->resolved, ...$this->changes->renamed($entity, $changeSet)]; // old URLs of a renamed page, resolved before the write
             foreach ($this->changes->distinct($this->changes->updatedEvents($entity, array_keys($changeSet), $changeSet)) as $ruleEvent) {
                 if ($ruleEvent->event === Event::Deleted) {
                     $this->resolveNow($entity, $ruleEvent);

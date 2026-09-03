@@ -7,6 +7,10 @@ contain breaking changes, listed under "Changed".
 
 ### Added
 
+- Renamed pages (A21). When a route parameter of a rule reads a changed field (the slug), the listener resolves the
+  rule against the previous values of the change set and submits the old URLs as deleted next to the new ones
+  (`ObjectChangeHandler::renamed()`). Route rules only; a `readonly` field the URL depends on is skipped with a
+  debug line.
 - Per-rule classification. `IndexNowListener` now runs every changed entity through
   `IndexNowKit\Url\ObjectChangeHandler`, so a class with several `#[IndexNow]` rules gets one decision per rule:
   the article page can be an update while the AMP page of the same entity is a deletion, both in one flush.
