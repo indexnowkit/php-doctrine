@@ -66,7 +66,7 @@ final class IndexNowListener
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
             /** @var array<string, array{0: mixed, 1: mixed}> $changeSet */
             $changeSet = $uow->getEntityChangeSet($entity);
-            foreach ($this->changes->updatedEvents($entity, array_keys($changeSet), $changeSet) as $ruleEvent) {
+            foreach ($this->changes->distinct($this->changes->updatedEvents($entity, array_keys($changeSet), $changeSet)) as $ruleEvent) {
                 if ($ruleEvent->event === Event::Deleted) {
                     $this->resolveNow($entity, $ruleEvent);
                 } else {
@@ -89,7 +89,7 @@ final class IndexNowListener
         }
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
-            foreach ($this->changes->deletedEvents($entity) as $ruleEvent) {
+            foreach ($this->changes->distinct($this->changes->deletedEvents($entity)) as $ruleEvent) {
                 $this->resolveNow($entity, $ruleEvent);
             }
         }
@@ -147,7 +147,7 @@ final class IndexNowListener
      */
     private function defer(object $entity, array $ruleEvents): void
     {
-        foreach ($ruleEvents as $ruleEvent) {
+        foreach ($this->changes->distinct($ruleEvents) as $ruleEvent) {
             $this->pending[] = [$entity, $ruleEvent];
         }
     }
