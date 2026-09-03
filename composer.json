@@ -3,8 +3,15 @@
     "description": "Doctrine ORM integration for IndexNow: #[IndexNow] attribute on entities, commit-safe URL submission via DBAL driver middleware.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["indexnow", "doctrine", "doctrine-orm", "seo", "yandex", "bing"],
-    "homepage": "https://indexnowkit.dev/php/doctrine",
+    "keywords": [
+        "indexnow",
+        "doctrine",
+        "doctrine-orm",
+        "seo",
+        "yandex",
+        "bing"
+    ],
+    "homepage": "https://github.com/indexnowkit/php",
     "require": {
         "php": "^8.2",
         "indexnowkit/core": "^0.2",
@@ -13,9 +20,32 @@
         "doctrine/event-manager": "^1.2 || ^2.0"
     },
     "autoload": {
-        "psr-4": {"IndexNowKit\\Doctrine\\": "src/"}
+        "psr-4": {
+            "IndexNowKit\\Doctrine\\": "src/"
+        }
     },
     "extra": {
-        "branch-alias": {"dev-main": "0.2-dev"}
+        "branch-alias": {
+            "dev-main": "0.2-dev"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^11.5",
+        "symfony/cache": "^6.4 || ^7.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IndexNowKit\\Doctrine\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=1G"
+    },
+    "support": {
+        "issues": "https://github.com/indexnowkit/php/issues",
+        "source": "https://github.com/indexnowkit/php/tree/main/packages/doctrine"
     }
 }
