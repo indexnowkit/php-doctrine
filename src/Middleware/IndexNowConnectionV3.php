@@ -41,6 +41,14 @@ final class IndexNowConnectionV3 extends AbstractConnectionMiddleware
         return $result;
     }
 
+    public function exec(string $sql): int
+    {
+        $affected = parent::exec($sql);
+        SavepointStatement::apply($this->staging, $this->native(), $sql);
+
+        return $affected;
+    }
+
     private function native(): object
     {
         $native = $this->getNativeConnection();

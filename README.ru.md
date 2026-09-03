@@ -8,6 +8,12 @@ Doctrine ORM 2.19+ и 3.x, DBAL 3.x и 4.x, PHP 8.2+.
 
 [English version](README.md)
 
+[![Packagist](https://img.shields.io/packagist/v/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
+[![Downloads](https://img.shields.io/packagist/dt/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
+[![CI](https://github.com/indexnowkit/php/actions/workflows/ci.yml/badge.svg)](https://github.com/indexnowkit/php/actions)
+[![Conformance](https://img.shields.io/badge/conformance-orm%2014%2F14-brightgreen)](https://github.com/indexnowkit/spec)
+![PHP](https://img.shields.io/badge/php-%5E8.2-777bb4)
+
 **Пользователям Symfony: берите [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — он собирает всё это сам,
 добавляет мост к роутеру, команды и панель профайлера. Этот пакет — для Doctrine без Symfony.
 
@@ -20,6 +26,8 @@ composer require indexnowkit/doctrine
 ## Сборка без фреймворка
 
 ```php
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\{EntityManager, ORMSetup};
 use IndexNowKit\{Config, IndexNowKit};
 use IndexNowKit\Doctrine\IndexNowDoctrine;
 use IndexNowKit\Url\{ArrayResolverLocator, AttributeUrlResolver};
@@ -37,7 +45,11 @@ $resolver = new AttributeUrlResolver(
 
 $wiring = new IndexNowDoctrine($indexNow, $resolver, $logger, autoFlush: true);
 
+$ormConfiguration = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/src/Entity'], isDevMode: false);
 $wiring->registerMiddleware($ormConfiguration);      // ДО DriverManager::getConnection()
+
+$connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => __DIR__ . '/var/app.db'], $ormConfiguration);
+$entityManager = new EntityManager($connection, $ormConfiguration);
 $wiring->registerListener($entityManager);
 ```
 
@@ -104,6 +116,15 @@ class Post
 Ничего из этого не выбрасывает исключений в ваше приложение. Некорректный атрибут, нечитаемый accessor в `when` или
 падающий резолвер пишутся в лог канала `indexnow` и не дают URL.
 
+## Переименованные страницы
+
+Когда меняется поле, которое читает параметр маршрута — slug, категория в пути, — старый URL начинает отвечать 404.
+При обновлении слушатель резолвит правило по **предыдущим** значениям change set и объявляет эти URL удалёнными
+рядом с новыми, объявленными обновлёнными, в том же flush (`ObjectChangeHandler::renamed()`, сценарий A21). Только
+route-правила; старая страница должна была быть публичной (`when` истинно до изменения); поле, которое нельзя
+вернуть на место (`readonly`, неинициализированное), пропускает старый URL со строкой `debug`. Ничего из этого не
+бросает исключений в `flush()`.
+
 ## Гарантия коммита
 
 `postFlush` срабатывает до внешнего `COMMIT`, если `flush()` обёрнут в `wrapInTransaction()` или ручную транзакцию,
@@ -114,6 +135,8 @@ class Post
   и либо освобождает отложенные URL, либо отбрасывает их;
 - `commit()`, который сам бросил исключение, тоже приводит к отбрасыванию, так что переиспользованное соединение
   никогда не отправит их позже;
+- вложенная транзакция, откаченная к своему savepoint (`ROLLBACK TO SAVEPOINT` — то, что DBAL делает при внутреннем
+  `rollBack()`), отбрасывает URL, отложенные внутри неё; внешний `COMMIT` доставляет остальные;
 - вне транзакции URL передаются немедленно.
 
 Если драйвер не отдаёт нативный объект соединения, слушатель пишет предупреждение и отправляет внутри открытой
@@ -133,6 +156,14 @@ class Post
 Регистрируйте слушатель **после** всего, что вычисляет значения, от которых зависят URL. Gedmo Sluggable пишет slug
 в `onFlush`, поэтому слушатель IndexNow должен отработать позже; бандл Symfony использует приоритет `-100` именно
 поэтому.
+
+## Совместимость
+
+Публичный API пакета: классы, названные в changelog и README, имена параметров их конструкторов (необязательные
+аргументы передавайте по имени) и классы DBAL-middleware. Действуют правила core, включая интерфейсы «may grow»:
+[bc.md](https://github.com/indexnowkit/php-core/blob/main/docs/bc.md). До 1.0 минорная версия может ломать
+совместимость; каждый такой случай перечислен в разделе «Changed» файла [CHANGELOG.md](CHANGELOG.md) вместе с
+миграцией.
 
 ## Документация
 

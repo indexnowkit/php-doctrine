@@ -8,18 +8,20 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
+use IndexNowKit\Config;
 use IndexNowKit\Doctrine\IndexNowDoctrine;
 use IndexNowKit\Doctrine\Tests\Fixtures\FakeRouter;
 use IndexNowKit\IndexNowKit;
 use IndexNowKit\Testing\ArrayLogger;
 use IndexNowKit\Testing\FakeTransport;
-use IndexNowKit\Tests\Support\Factory;
 use IndexNowKit\Url\ArrayResolverLocator;
 use IndexNowKit\Url\AttributeUrlResolver;
 use PHPUnit\Framework\TestCase;
 
 abstract class DoctrineTestCase extends TestCase
 {
+    public const KEY = 'abcdef1234567890abcdef1234567890';
+
     protected EntityManager $em;
     protected FakeTransport $transport;
     protected ArrayLogger $logger;
@@ -30,7 +32,7 @@ abstract class DoctrineTestCase extends TestCase
     {
         $this->transport = new FakeTransport();
         $this->logger = new ArrayLogger();
-        $this->indexNow = IndexNowKit::create(Factory::config(), $this->transport, $this->logger);
+        $this->indexNow = IndexNowKit::create(Config::fromArray(['key' => self::KEY, 'base_url' => 'https://www.example.com', 'debounce' => ['per_url' => 0]]), $this->transport, $this->logger);
         $resolver = new AttributeUrlResolver($this->indexNow->attributes, new FakeRouter(), new ArrayResolverLocator());
         $this->wiring = new IndexNowDoctrine($this->indexNow, $resolver, $this->logger, autoFlush: true);
 

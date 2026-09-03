@@ -97,6 +97,29 @@ final class OrmConformanceTest extends DoctrineTestCase
         self::assertSame([], $this->sentUrls());
     }
 
+    #[TestDox('A05c inner transaction rolled back to its savepoint, outer commit -> only the outer URLs')]
+    public function testA05SavepointRollback(): void
+    {
+        $this->em->getConnection()->setNestTransactionsWithSavepoints(true);
+        $this->em->beginTransaction();
+        $this->em->persist(new Post('kept'));
+        $this->em->flush();
+        $this->em->beginTransaction();
+        $this->em->persist($inner = new Post('rolled-back'));
+        $this->em->flush();
+        $this->em->rollback();
+        $this->em->detach($inner);
+        self::assertSame([], $this->sentUrls());
+        $this->em->beginTransaction();
+        $this->em->persist(new Post('kept-too'));
+        $this->em->flush();
+        $this->em->commit();
+        $this->em->commit();
+
+        self::assertCount(1, $this->transport->posts);
+        self::assertEqualsCanonicalizing(['https://www.example.com/posts/kept', 'https://www.example.com/posts/kept-too'], $this->sentUrls());
+    }
+
     #[TestDox('A05b nested transaction, outer commit -> one POST at the real COMMIT')]
     public function testA05NestedCommit(): void
     {

@@ -17,9 +17,9 @@ contain breaking changes, listed under "Changed".
 - Changed to-many associations are detected. A `PersistentCollection` scheduled for update or deletion is not part
   of its owner's change set, so `post.tags` used to change without the post's pages being resubmitted. The owner is
   now re-classified with the association's field name as the changed field.
-- `IndexNowDoctrine` standalone wiring helper: builds the staging, the listener and the DBAL middleware, connects
-  the sink, and exposes `registerMiddleware(Configuration)` and `registerListener(EntityManagerInterface)`. Its
-  `$autoFlush` argument submits immediately after hand-off, which is what a framework-less script wants.
+- Savepoints. The DBAL middleware mirrors `SAVEPOINT` / `RELEASE SAVEPOINT` / `ROLLBACK TO SAVEPOINT` (and the SQL
+  Server spellings) into the staging, so an inner transaction rolled back to its savepoint drops the URLs staged
+  inside it while the outer `COMMIT` still delivers the rest (conformance A05, `SavepointStatement`).
 - Every resolved URL is logged at `debug` with its provenance: `indexnow: {source} ({event}) -> {url}`, where the
   source is `App\Entity\Post#post_amp`.
 
@@ -38,10 +38,14 @@ contain breaking changes, listed under "Changed".
 - Change classification is delegated to the core (`Attribute\ChangeClassifier`), including the fix for a `when`
   given as a getter name: `when: 'isPublished'` now detects the `published` field in the change set, so
   publish/unpublish transitions are classified correctly.
+
+### Fixed
+
 - A typo in an attribute, an unreadable `when` accessor or a failing resolver is logged and yields no URLs instead
-  of breaking the flush.
+  of breaking the flush; the same holds for the old URL of a renamed page (`renamed()` never throws into `flush()`).
 - Staged URLs are discarded when `commit()` itself throws, so a reused connection never delivers them later.
 - A rolled-back transaction logs the discard at `debug` instead of dropping the URLs silently.
+- A custom `UrlResolverInterface` is called once per entity and event, not once per `#[IndexNow]` rule.
 
 ### Notes
 

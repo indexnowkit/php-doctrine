@@ -8,6 +8,12 @@ Doctrine ORM 2.19+ and 3.x, DBAL 3.x and 4.x, PHP 8.2+.
 
 [Русская версия](README.ru.md)
 
+[![Packagist](https://img.shields.io/packagist/v/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
+[![Downloads](https://img.shields.io/packagist/dt/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
+[![CI](https://github.com/indexnowkit/php/actions/workflows/ci.yml/badge.svg)](https://github.com/indexnowkit/php/actions)
+[![Conformance](https://img.shields.io/badge/conformance-orm%2014%2F14-brightgreen)](https://github.com/indexnowkit/spec)
+![PHP](https://img.shields.io/badge/php-%5E8.2-777bb4)
+
 **Symfony users: take [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — it wires all of this, adds the router
 bridge, the commands and the profiler panel. This package is for Doctrine without Symfony.
 
@@ -20,8 +26,9 @@ composer require indexnowkit/doctrine
 ## Standalone wiring
 
 ```php
+use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\{EntityManager, ORMSetup};
 use IndexNowKit\{Config, IndexNowKit};
-use IndexNowKit\Attribute\AttributeReader;
 use IndexNowKit\Doctrine\IndexNowDoctrine;
 use IndexNowKit\Url\{ArrayResolverLocator, AttributeUrlResolver};
 
@@ -38,7 +45,11 @@ $resolver = new AttributeUrlResolver(
 
 $wiring = new IndexNowDoctrine($indexNow, $resolver, $logger, autoFlush: true);
 
+$ormConfiguration = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/src/Entity'], isDevMode: false);
 $wiring->registerMiddleware($ormConfiguration);      // BEFORE DriverManager::getConnection()
+
+$connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'path' => __DIR__ . '/var/app.db'], $ormConfiguration);
+$entityManager = new EntityManager($connection, $ormConfiguration);
 $wiring->registerListener($entityManager);
 ```
 
@@ -106,6 +117,15 @@ In `postFlush` the deferred rules are resolved, every URL is logged at `debug` w
 Nothing here throws into your application. An invalid attribute, an unreadable `when` accessor or a failing resolver
 is logged on the `indexnow` channel and yields no URLs.
 
+## Renamed pages
+
+When a field a route parameter reads changes — the slug, the category the path goes through — the old URL now
+answers 404. On an update the listener resolves the rule against the **previous** values of the change set and
+announces those URLs as deleted, next to the new URLs as updated, in the same flush (`ObjectChangeHandler::renamed()`,
+scenario A21). Route rules only; the old page must have been public (`when` true before the change); a field the URL
+depends on that cannot be written back (`readonly`, uninitialized) skips the old URL with a `debug` line. Nothing in
+this path throws into `flush()`.
+
 ## Commit safety
 
 `postFlush` runs before the outer `COMMIT` whenever `flush()` is wrapped in `wrapInTransaction()` or a manual
@@ -113,8 +133,11 @@ transaction, and Doctrine has no after-commit event. So:
 
 - if the connection has an open transaction, the URLs are staged against its **native** connection object;
 - the DBAL driver middleware sees the real `commit()` and `rollBack()` — nesting level 0, identically in DBAL 3 and
-  4 — and either releases the staged URLs or discards them;
+  4 (`Middleware\IndexNowConnection` / `IndexNowConnectionV3`, picked by `IndexNowDriver` at connect time) — and
+  either releases the staged URLs or discards them;
 - a `commit()` that itself throws discards them too, so a pooled connection never delivers them later;
+- a nested transaction rolled back to its savepoint (`ROLLBACK TO SAVEPOINT`, what DBAL issues for an inner
+  `rollBack()`) drops the URLs staged inside it; the outer `COMMIT` delivers the rest;
 - outside a transaction the URLs are handed over immediately.
 
 If the driver exposes no native connection object, the listener logs a warning and submits inside the open
@@ -134,6 +157,13 @@ transaction rather than losing the URLs.
 Register the listener **after** anything that computes values the URLs depend on. With Gedmo Sluggable the slug is
 written in `onFlush`, so the IndexNow listener must run later; the Symfony bundle uses priority `-100` for exactly
 this reason.
+
+## Compatibility
+
+Public API of this package: the classes named in the changelog and the README, their constructor parameter names
+(pass optional arguments by name), and the DBAL middleware classes. The core's rules apply, including the
+"may grow" interfaces: [bc.md](https://github.com/indexnowkit/php-core/blob/main/docs/bc.md). Before 1.0 a minor
+version may break; every break is listed under "Changed" in [CHANGELOG.md](CHANGELOG.md) with the migration.
 
 ## Documentation
 
