@@ -6,7 +6,7 @@ namespace IndexNowKit\Doctrine\Middleware;
 
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
-use IndexNowKit\Doctrine\Transaction\TransactionStaging;
+use IndexNowKit\Transaction\TransactionStaging;
 use Throwable;
 
 /**

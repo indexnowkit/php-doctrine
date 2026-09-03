@@ -11,9 +11,9 @@ use Doctrine\ORM\Events;
 use IndexNowKit\Attribute\AttributeReaderInterface;
 use IndexNowKit\Attribute\ChangeClassifier;
 use IndexNowKit\Attribute\IndexNow as IndexNowAttribute;
-use IndexNowKit\Doctrine\Transaction\TransactionStaging;
+use IndexNowKit\Transaction\TransactionStaging;
 use IndexNowKit\Event;
-use IndexNowKit\IndexNow;
+use IndexNowKit\IndexNowKit;
 use IndexNowKit\Url\GuardedUrlResolver;
 use IndexNowKit\Url\UrlResolverInterface;
 use Psr\Log\LoggerInterface;
@@ -38,11 +38,11 @@ final class IndexNowListener
     private readonly GuardedUrlResolver $resolver;
 
     /**
-     * @param UrlResolverInterface|null $resolver  defaults to the facade's resolver (IndexNow::resolver())
-     * @param bool                      $autoFlush call IndexNow::flush() right after hand-off (standalone usage); adapters flush at request end
+     * @param UrlResolverInterface|null $resolver  defaults to the facade's resolver (IndexNowKit::resolver())
+     * @param bool                      $autoFlush call IndexNowKit::flush() right after hand-off (standalone usage); adapters flush at request end
      */
     public function __construct(
-        private readonly IndexNow $indexNow,
+        private readonly IndexNowKit $indexNow,
         ?UrlResolverInterface $resolver,
         private readonly TransactionStaging $staging,
         private readonly LoggerInterface $logger = new NullLogger(),

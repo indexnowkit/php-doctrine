@@ -10,10 +10,10 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use IndexNowKit\Doctrine\IndexNowDoctrine;
 use IndexNowKit\Doctrine\Tests\Fixtures\FakeRouter;
-use IndexNowKit\IndexNow;
-use IndexNowKit\Tests\Support\ArrayLogger;
+use IndexNowKit\IndexNowKit;
+use IndexNowKit\Testing\ArrayLogger;
 use IndexNowKit\Tests\Support\Factory;
-use IndexNowKit\Tests\Support\FakeTransport;
+use IndexNowKit\Testing\FakeTransport;
 use IndexNowKit\Url\ArrayResolverLocator;
 use IndexNowKit\Url\AttributeUrlResolver;
 use PHPUnit\Framework\TestCase;
@@ -23,14 +23,14 @@ abstract class DoctrineTestCase extends TestCase
     protected EntityManager $em;
     protected FakeTransport $transport;
     protected ArrayLogger $logger;
-    protected IndexNow $indexNow;
+    protected IndexNowKit $indexNow;
     protected IndexNowDoctrine $wiring;
 
     protected function setUp(): void
     {
         $this->transport = new FakeTransport();
         $this->logger = new ArrayLogger();
-        $this->indexNow = IndexNow::create(Factory::config(), $this->transport, $this->logger);
+        $this->indexNow = IndexNowKit::create(Factory::config(), $this->transport, $this->logger);
         $resolver = new AttributeUrlResolver($this->indexNow->attributes, new FakeRouter(), new ArrayResolverLocator());
         $this->wiring = new IndexNowDoctrine($this->indexNow, $resolver, $this->logger, autoFlush: true);
 

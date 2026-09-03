@@ -6,7 +6,7 @@ namespace IndexNowKit\Doctrine\Middleware;
 
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Middleware;
-use IndexNowKit\Doctrine\Transaction\TransactionStaging;
+use IndexNowKit\Transaction\TransactionStaging;
 
 /**
  * DBAL driver middleware: observes real COMMIT/ROLLBACK (nesting level 0) on every connection.

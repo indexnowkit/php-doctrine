@@ -7,8 +7,8 @@ namespace IndexNowKit\Doctrine;
 use Doctrine\DBAL\Configuration as DbalConfiguration;
 use Doctrine\ORM\EntityManagerInterface;
 use IndexNowKit\Doctrine\Middleware\IndexNowMiddleware;
-use IndexNowKit\Doctrine\Transaction\TransactionStaging;
-use IndexNowKit\IndexNow;
+use IndexNowKit\Transaction\TransactionStaging;
+use IndexNowKit\IndexNowKit;
 use IndexNowKit\Url\UrlResolverInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -22,7 +22,7 @@ final class IndexNowDoctrine
     public readonly IndexNowListener $listener;
     public readonly IndexNowMiddleware $middleware;
 
-    public function __construct(IndexNow $indexNow, UrlResolverInterface $resolver, LoggerInterface $logger = new NullLogger(), bool $autoFlush = true)
+    public function __construct(IndexNowKit $indexNow, UrlResolverInterface $resolver, LoggerInterface $logger = new NullLogger(), bool $autoFlush = true)
     {
         $this->staging = new TransactionStaging();
         $this->listener = new IndexNowListener($indexNow, $resolver, $this->staging, $logger, $autoFlush);

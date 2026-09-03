@@ -8,7 +8,7 @@ use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use Doctrine\DBAL\Driver\Middleware\AbstractDriverMiddleware;
-use IndexNowKit\Doctrine\Transaction\TransactionStaging;
+use IndexNowKit\Transaction\TransactionStaging;
 use ReflectionMethod;
 
 final class IndexNowDriver extends AbstractDriverMiddleware
