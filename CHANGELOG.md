@@ -3,11 +3,11 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
-## [Unreleased]
+## [0.2.1] — 2026-09-04
 
 ### Changed
 
-- Requires `indexnowkit/core ^0.2.2`. The test suite runs the shared ORM conformance kit
+- Requires `indexnowkit/core ^0.2.2 || ^0.3`, so the package installs next to `indexnowkit/symfony-bundle 0.3`. The test suite runs the shared ORM conformance kit
   (`IndexNowKit\Testing\Conformance\OrmConformanceTestCase`, A01–A21 including the renamed-page scenario A21) through
   a Doctrine driver; Doctrine-specific behaviour stays in `tests/ListenerTest.php`. No runtime change.
 
@@ -67,5 +67,6 @@ contain breaking changes, listed under "Changed".
 - `onFlush` / `postFlush` listener resolving URLs (deletions before removal, publish and unpublish transitions).
 - DBAL driver middleware (DBAL 3 and 4) delivering URLs only after the outermost COMMIT.
 
+[0.2.1]: https://github.com/indexnowkit/php-doctrine/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/indexnowkit/php-doctrine/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/indexnowkit/php-doctrine/releases/tag/0.1.0
