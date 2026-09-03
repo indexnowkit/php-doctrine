@@ -1,0 +1,21 @@
+{
+    "name": "indexnowkit/doctrine",
+    "description": "Doctrine ORM integration for IndexNow: #[IndexNow] attribute on entities, commit-safe URL submission via DBAL driver middleware.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["indexnow", "doctrine", "doctrine-orm", "seo", "yandex", "bing"],
+    "homepage": "https://indexnowkit.dev/php/doctrine",
+    "require": {
+        "php": "^8.2",
+        "indexnowkit/core": "^0.1",
+        "doctrine/orm": "^2.19 || ^3.0",
+        "doctrine/dbal": "^3.8 || ^4.0",
+        "doctrine/event-manager": "^1.2 || ^2.0"
+    },
+    "autoload": {
+        "psr-4": {"IndexNowKit\\Doctrine\\": "src/"}
+    },
+    "extra": {
+        "branch-alias": {"dev-main": "0.1-dev"}
+    }
+}
