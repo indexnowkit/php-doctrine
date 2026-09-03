@@ -178,4 +178,4 @@ version may break; every break is listed under "Changed" in [CHANGELOG.md](CHANG
 
 Changelog: [CHANGELOG.md](CHANGELOG.md). Versioning: SemVer; before 1.0 minor versions may break.
 
-MIT.
+MIT. IndexNow is a trademark of its owner; this project is independent and not affiliated with Microsoft, Yandex or indexnow.org.

@@ -3,7 +3,7 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
-## 0.2.0 — 2026-09-04
+## [0.2.0] — 2026-09-04
 
 ### Added
 
@@ -54,7 +54,10 @@ contain breaking changes, listed under "Changed".
 - `route:` needs a router bridge. Standalone Doctrine has none, so use `url:`, `urls:`, `resolver:` or supply your
   own `RouteUrlResolverInterface`.
 
-## 0.1.0 — 2026-09-03
+## [0.1.0] — 2026-09-03
 
 - `onFlush` / `postFlush` listener resolving URLs (deletions before removal, publish and unpublish transitions).
 - DBAL driver middleware (DBAL 3 and 4) delivering URLs only after the outermost COMMIT.
+
+[0.2.0]: https://github.com/indexnowkit/php-doctrine/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/indexnowkit/php-doctrine/releases/tag/0.1.0
