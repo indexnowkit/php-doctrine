@@ -9,6 +9,7 @@ use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
 use Doctrine\ORM\Events;
 use IndexNowKit\Attribute\AttributeReaderInterface;
+use IndexNowKit\Attribute\ChangeClassifier;
 use IndexNowKit\Attribute\IndexNow as IndexNowAttribute;
 use IndexNowKit\Doctrine\Transaction\TransactionStaging;
 use IndexNowKit\Event;
@@ -36,17 +37,18 @@ final class IndexNowListener
     private readonly GuardedUrlResolver $resolver;
 
     /**
-     * @param bool $autoFlush call IndexNow::flush() right after hand-off (standalone usage); adapters flush at request end
+     * @param UrlResolverInterface|null $resolver  defaults to the facade's resolver (IndexNow::resolver())
+     * @param bool                      $autoFlush call IndexNow::flush() right after hand-off (standalone usage); adapters flush at request end
      */
     public function __construct(
         private readonly IndexNow $indexNow,
-        UrlResolverInterface $resolver,
+        ?UrlResolverInterface $resolver,
         private readonly TransactionStaging $staging,
         private readonly LoggerInterface $logger = new NullLogger(),
         private readonly bool $autoFlush = false,
     ) {
         $this->reader = $indexNow->attributes;
-        $this->resolver = new GuardedUrlResolver($resolver, $indexNow->attributes, $logger);
+        $this->resolver = $resolver === null ? $indexNow->resolver() : new GuardedUrlResolver($resolver, $indexNow->attributes, $logger);
     }
 
     public function onFlush(OnFlushEventArgs $args): void
@@ -70,7 +72,7 @@ final class IndexNowListener
             }
             /** @var array<string, array{0: mixed, 1: mixed}> $changeSet */
             $changeSet = $uow->getEntityChangeSet($entity);
-            $event = self::classifyUpdate($entity, $attribute, $changeSet);
+            $event = self::classifyUpdate($attribute, $changeSet);
             if ($event === Event::Deleted) {
                 $this->resolveNow($entity, Event::Deleted);
             } elseif ($event !== null) {
@@ -138,21 +140,10 @@ final class IndexNowListener
     /**
      * @param array<string, array{0: mixed, 1: mixed}> $changeSet
      */
-    private static function classifyUpdate(object $entity, IndexNowAttribute $attribute, array $changeSet): ?Event
+    private static function classifyUpdate(IndexNowAttribute $attribute, array $changeSet): ?Event
     {
-        if ($attribute->when !== null && isset($changeSet[$attribute->when])) {
-            [$old, $new] = $changeSet[$attribute->when];
-            if ((bool) $old && !(bool) $new) {
-                return $attribute->listensTo(Event::Deleted) ? Event::Deleted : null;
-            }
-            if (!(bool) $old && (bool) $new) {
-                return $attribute->listensTo(Event::Created) ? Event::Created : null;
-            }
-        }
-        if (!$attribute->listensTo(Event::Updated) || !$attribute->caresAbout(array_keys($changeSet))) {
-            return null;
-        }
+        $whenChange = $attribute->when !== null && isset($changeSet[$attribute->when]) ? $changeSet[$attribute->when] : null;
 
-        return Event::Updated;
+        return ChangeClassifier::classify($attribute, array_keys($changeSet), $whenChange);
     }
 }
