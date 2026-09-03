@@ -7,6 +7,7 @@ namespace IndexNowKit\Doctrine\Middleware;
 use Doctrine\DBAL\Driver\Connection as DriverConnection;
 use Doctrine\DBAL\Driver\Middleware\AbstractConnectionMiddleware;
 use IndexNowKit\Doctrine\Transaction\TransactionStaging;
+use Throwable;
 
 /**
  * DBAL 4 flavour (void return types).
@@ -20,7 +21,13 @@ final class IndexNowConnection extends AbstractConnectionMiddleware
 
     public function commit(): void
     {
-        parent::commit();
+        try {
+            parent::commit();
+        } catch (Throwable $e) {
+            $this->staging->discard($this->native());
+
+            throw $e;
+        }
         $this->staging->commit($this->native());
     }
 

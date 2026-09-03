@@ -18,6 +18,7 @@ use IndexNowKit\Url\GuardedUrlResolver;
 use IndexNowKit\Url\UrlResolverInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Throwable;
 
 /**
  * Collects changed entities in onFlush, resolves URLs in postFlush (ids assigned), hands them over
@@ -59,14 +60,14 @@ final class IndexNowListener
         $this->pendingUrls = [];
 
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
-            $attribute = $this->reader->read($entity);
+            $attribute = $this->safeRead($entity);
             if ($attribute !== null && $attribute->listensTo(Event::Created)) {
                 $this->pendingEntities[] = [$entity, Event::Created];
             }
         }
 
         foreach ($uow->getScheduledEntityUpdates() as $entity) {
-            $attribute = $this->reader->read($entity);
+            $attribute = $this->safeRead($entity);
             if ($attribute === null) {
                 continue;
             }
@@ -81,7 +82,7 @@ final class IndexNowListener
         }
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
-            $attribute = $this->reader->read($entity);
+            $attribute = $this->safeRead($entity);
             if ($attribute !== null && $attribute->listensTo(Event::Deleted)) {
                 $this->resolveNow($entity, Event::Deleted);
             }
@@ -129,6 +130,20 @@ final class IndexNowListener
         $this->indexNow->collect($urls);
         if ($this->autoFlush) {
             $this->indexNow->flush();
+        }
+    }
+
+    /**
+     * An invalid #[IndexNow] (no route/resolver, unknown event) must not break the flush of unrelated entities.
+     */
+    private function safeRead(object $entity): ?IndexNowAttribute
+    {
+        try {
+            return $this->reader->read($entity);
+        } catch (Throwable $e) {
+            $this->logger->error('indexnow: invalid #[IndexNow] on {class}: {error}', ['class' => $entity::class, 'error' => $e->getMessage(), 'exception' => $e]);
+
+            return null;
         }
     }
 

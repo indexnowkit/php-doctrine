@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace IndexNowKit\Doctrine\Tests;
 
+use IndexNowKit\Doctrine\Tests\Fixtures\BadAttribute;
 use IndexNowKit\Doctrine\Tests\Fixtures\Broken;
 use IndexNowKit\Doctrine\Tests\Fixtures\Post;
 use IndexNowKit\Doctrine\Tests\Fixtures\Untracked;
@@ -168,6 +169,18 @@ final class OrmConformanceTest extends DoctrineTestCase
         self::assertSame([], $this->sentUrls());
         self::assertStringContainsString('cannot resolve URL', implode("\n", $this->logger->messages('error')));
         self::assertSame(1, $this->em->getRepository(Broken::class)->count([]));
+    }
+
+    #[TestDox('A10b invalid #[IndexNow] attribute -> error logged in onFlush, flush succeeds')]
+    public function testA10InvalidAttribute(): void
+    {
+        $this->em->persist(new BadAttribute('x'));
+        $this->em->persist(new Post('with-bad-sibling'));
+        $this->em->flush();
+
+        self::assertSame(['https://www.example.com/posts/with-bad-sibling'], $this->sentUrls(), 'unrelated entity in the same flush is still submitted');
+        self::assertStringContainsString('invalid #[IndexNow]', implode("\n", $this->logger->messages('error')));
+        self::assertSame(1, $this->em->getRepository(BadAttribute::class)->count([]));
     }
 
     #[TestDox('A11 HTTP 500 -> flush succeeds, warning logged')]
