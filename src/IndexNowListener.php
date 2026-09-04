@@ -55,7 +55,7 @@ final class IndexNowListener
 
     public function onFlush(OnFlushEventArgs $args): void
     {
-        $uow = $args->getObjectManager()->getUnitOfWork();
+        $uow = self::entityManager($args)->getUnitOfWork();
         $this->pending = [];
         $this->resolved = [];
 
@@ -110,7 +110,16 @@ final class IndexNowListener
         foreach ($resolved as $item) {
             $this->logger->debug('indexnow: {source} ({event}) -> {url}', ['source' => $item->source(), 'event' => $item->event->value, 'url' => $item->url]);
         }
-        $this->handOff($args->getObjectManager(), ResolvedUrl::urls($resolved));
+        $this->handOff(self::entityManager($args), ResolvedUrl::urls($resolved));
+    }
+
+    /** ORM 2.19 types the manager of the flush events as ObjectManager; 2.20 and 3 as EntityManagerInterface. */
+    private static function entityManager(OnFlushEventArgs|PostFlushEventArgs $args): EntityManagerInterface
+    {
+        $em = $args->getObjectManager();
+        \assert($em instanceof EntityManagerInterface);
+
+        return $em;
     }
 
     /**

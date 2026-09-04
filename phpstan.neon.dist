@@ -1,5 +1,5 @@
 # Level 9 with phpstan-strict-rules; the monorepo CI runs this same file per package.
-# The DBAL 3 / ORM 2 flavour runs phpstan.dbal3.neon instead (the V3 connection analysed, the DBAL 4 one excluded).
+# The DBAL 3 / ORM 2 installs (dbal3, lowest) run phpstan.dbal3.neon instead (the V3 connection analysed, the DBAL 4 one excluded).
 includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
 parameters:

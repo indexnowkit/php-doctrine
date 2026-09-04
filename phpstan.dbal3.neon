@@ -1,4 +1,4 @@
-# The DBAL 3 / ORM 2 flavour (ci:install:dbal3): analyses Middleware\IndexNowConnectionV3 instead of the DBAL 4
+# The DBAL 3 / ORM 2 installs (ci:install:dbal3 and ci:install:lowest): analyses Middleware\IndexNowConnectionV3 instead of the DBAL 4
 # IndexNowConnection; everything else is phpstan.neon.dist. No baseline: the code reads the ORM 2 arrays and the
 # ORM 3 mapping objects in a way both type sets accept.
 includes:
