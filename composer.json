@@ -3,6 +3,8 @@
     "description": "Doctrine ORM integration for IndexNow: #[IndexNow] attribute on entities, commit-safe URL submission via DBAL driver middleware.",
     "type": "library",
     "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "keywords": [
         "indexnow",
         "doctrine",

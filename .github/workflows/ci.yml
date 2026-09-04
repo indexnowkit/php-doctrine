@@ -1,7 +1,7 @@
 # CI of the read-only split repository indexnowkit/php-doctrine. Development happens in the monorepo
 # https://github.com/indexnowkit/php, whose CI runs the same ci:install:* scripts of composer.json against the
 # working copy of the sibling packages. Between releases the indexnowkit/* constraints resolve to the
-# siblings' main branches, hence minimum-stability dev here.
+# siblings' main branches, hence minimum-stability dev (with prefer-stable) in composer.json.
 name: CI
 
 on:
@@ -31,8 +31,6 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: pdo_sqlite
           coverage: none
-      - name: Allow the unreleased sibling branches
-        run: composer config minimum-stability dev && composer config prefer-stable true
       - name: Install (${{ matrix.deps }})
         run: composer run ci:install:${{ matrix.deps }}
       - run: vendor/bin/phpunit
