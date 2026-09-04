@@ -3,6 +3,15 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.3.0] — 2026-09-04
+
+### Changed
+
+- Requires `indexnowkit/core ^0.4` (the adapter kit release: the sitemap reader is `indexnowkit/sitemap`,
+  `Result::urlsOf()` is gone). No change in this package's own API; upgrade together with the core.
+- Dev tooling: phpstan runs on the DBAL 4 / ORM 3 install only (DBAL 3 / ORM 2 declare their signatures in
+  docblocks that contradict it); the `lowest` and `dbal3` flavours still run the tests.
+
 ## [0.2.1] — 2026-09-04
 
 ### Changed
