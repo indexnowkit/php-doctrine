@@ -44,7 +44,10 @@
     },
     "scripts": {
         "test": "phpunit",
-        "stan": "phpstan analyse --memory-limit=1G"
+        "stan": "phpstan analyse --memory-limit=1G",
+        "ci:install:highest": "@composer update --no-interaction --prefer-dist",
+        "ci:install:lowest": "@composer update --no-interaction --prefer-dist --prefer-lowest --prefer-stable",
+        "ci:install:dbal3": "@composer update --no-interaction --prefer-dist --with doctrine/dbal:^3.8 --with doctrine/orm:^2.19"
     },
     "config": {
         "sort-packages": true
