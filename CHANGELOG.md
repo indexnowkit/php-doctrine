@@ -3,6 +3,13 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.3.1] — 2026-09-05
+
+### Changed
+
+- Requires `indexnowkit/core ^0.5` (the second adapter kit release, additive). No change in this package's own API;
+  upgrade together with the core.
+
 ## [0.3.0] — 2026-09-05
 
 ### Changed
