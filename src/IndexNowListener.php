@@ -82,11 +82,10 @@ final class IndexNowListener
                 continue;
             }
             $owner = $collection->getOwner();
-            $field = self::fieldName($collection);
-            if ($owner === null || $field === null) {
+            if ($owner === null) {
                 continue;
             }
-            $this->defer($owner, $this->changes->updatedEvents($owner, [$field]));
+            $this->defer($owner, $this->changes->updatedEvents($owner, [self::fieldName($collection)]));
         }
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
@@ -161,15 +160,9 @@ final class IndexNowListener
     /**
      * @param PersistentCollection<int|string, object> $collection
      */
-    private static function fieldName(PersistentCollection $collection): ?string
+    private static function fieldName(PersistentCollection $collection): string
     {
-        // ORM 2: array, ORM 3: AssociationMapping object with a public $fieldName; both are iterable key => value.
-        $vars = [];
-        foreach ($collection->getMapping() as $key => $value) { // @phpstan-ignore foreach.nonIterable
-            $vars[$key] = $value;
-        }
-        $field = $vars['fieldName'] ?? null;
-
-        return \is_string($field) ? $field : null;
+        // ORM 2: array{fieldName: string, ...}, ORM 3: AssociationMapping object with a public $fieldName; the cast reads both.
+        return ((array) $collection->getMapping())['fieldName'];
     }
 }

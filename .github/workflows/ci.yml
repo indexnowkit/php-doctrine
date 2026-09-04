@@ -34,6 +34,5 @@ jobs:
       - name: Install (${{ matrix.deps }})
         run: composer run ci:install:${{ matrix.deps }}
       - run: vendor/bin/phpunit
-      - run: vendor/bin/phpstan analyse --memory-limit=1G
-        # DBAL 3 / ORM 2 declare their signatures in docblocks that contradict DBAL 4 / ORM 3; phpstan runs on the DBAL 4 install only.
-        if: matrix.deps == 'highest'
+      # dbal3: phpstan.dbal3.neon analyses the DBAL 3 connection (Middleware\IndexNowConnectionV3) instead of the DBAL 4 one.
+      - run: vendor/bin/phpstan analyse --memory-limit=1G ${{ matrix.deps == 'dbal3' && '-c phpstan.dbal3.neon' || '' }}

@@ -2,6 +2,7 @@
 /tests                 export-ignore
 /phpunit.xml.dist      export-ignore
 /phpstan.neon.dist     export-ignore
+/phpstan.dbal3.neon    export-ignore
 /.github               export-ignore
 
 * text=auto eol=lf
