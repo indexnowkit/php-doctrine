@@ -216,7 +216,7 @@ class Post { /* ORM columns, isPublished() */ }
 | Эксплуатация и логи | [core/docs/operations.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/operations.md) |
 | Тестирование | [core/docs/testing.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/testing.md) |
 | Как написать свой адаптер | [core/docs/adapters.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/adapters.md) |
-| Обоснование архитектуры | [docs/spec](https://github.com/indexnowkit/php/tree/main/docs/spec) |
+| Обоснование архитектуры | [docs/spec](https://github.com/indexnowkit/spec) |
 
 Changelog: [CHANGELOG.md](CHANGELOG.md). Версионирование: SemVer; до 1.0 минорные версии могут ломать совместимость.
 

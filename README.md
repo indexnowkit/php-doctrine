@@ -216,7 +216,7 @@ class Post { /* ORM columns, isPublished() */ }
 | Operations and logging | [core/docs/operations.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/operations.md) |
 | Testing | [core/docs/testing.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/testing.md) |
 | Writing your own adapter | [core/docs/adapters.md](https://github.com/indexnowkit/php/blob/main/packages/core/docs/adapters.md) |
-| Design rationale | [docs/spec](https://github.com/indexnowkit/php/tree/main/docs/spec) |
+| Design rationale | [docs/spec](https://github.com/indexnowkit/spec) |
 
 Changelog: [CHANGELOG.md](CHANGELOG.md). Versioning: SemVer; before 1.0 minor versions may break.
 
