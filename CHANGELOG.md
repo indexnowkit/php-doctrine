@@ -3,6 +3,12 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.6.0] — 2026-09-06
+
+### Changed
+
+- Requires `indexnowkit/core ^0.8` (the `Reason` cases and the `check` codes of wave E); no code change in this package.
+
 ## [0.5.0] — 2026-09-06
 
 ### Changed
