@@ -195,7 +195,7 @@ use IndexNowKit\Attribute\{IndexNow, IndexNowDefaults};
 class Post { /* ORM columns, isPublished() */ }
 ```
 
-- Проверка: с бандлом — `bin/console indexnow:check` и `bin/console indexnow:explain App\\Entity\\Post 1`; отдельно — `$indexNow->explain($post)` возвращает URL с правилом, которое их дало.
+- Проверка: с бандлом — `bin/console indexnow:check` и `bin/console indexnow:explain 'App\\Entity\\Post' 1`; отдельно — `$indexNow->explain($post)` возвращает URL с правилом, которое их дало.
 - Ловушки:
   - `dispatch: auto` есть в Symfony (`auto` | `messenger` | `sync` | `none`) и Yii2 (`auto` | `queue` | `sync` | `none`), в Laravel **нет** (`queue` | `sync` | `none`).
   - Локали: `router.locales` в Laravel, `router.languages` в Yii2, `framework.enabled_locales` в Symfony; `locales: 'all'` у правила берёт этот список.

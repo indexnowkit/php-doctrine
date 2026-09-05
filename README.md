@@ -195,7 +195,7 @@ use IndexNowKit\Attribute\{IndexNow, IndexNowDefaults};
 class Post { /* ORM columns, isPublished() */ }
 ```
 
-- Verify: with the bundle, `bin/console indexnow:check` and `bin/console indexnow:explain App\\Entity\\Post 1`; standalone, `$indexNow->explain($post)` returns the resolved URLs with the rule that produced each.
+- Verify: with the bundle, `bin/console indexnow:check` and `bin/console indexnow:explain 'App\\Entity\\Post' 1`; standalone, `$indexNow->explain($post)` returns the resolved URLs with the rule that produced each.
 - Pitfalls:
   - `dispatch: auto` exists in Symfony (`auto` | `messenger` | `sync` | `none`) and Yii2 (`auto` | `queue` | `sync` | `none`), **not** in Laravel (`queue` | `sync` | `none`).
   - Locales: `router.locales` in Laravel, `router.languages` in Yii2, `framework.enabled_locales` in Symfony; `locales: 'all'` on a rule uses that list.
