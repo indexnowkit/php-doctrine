@@ -3,6 +3,18 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.4.0] — 2026-09-05
+
+### Changed
+
+- Requires `indexnowkit/core ^0.6` (wave 0a of docs/spec/17). No change in this package's own API; upgrade
+  together with the core.
+
+### Documentation
+
+- [docs/bc.md](docs/bc.md): what this package keeps stable (`IndexNowDoctrine`, the listener and middleware, the
+  commit-safety behaviour, the DBAL/ORM majors) and what is not a contract. README: "Why this over X", the issues link.
+
 ## [0.3.1] — 2026-09-05
 
 ### Changed
