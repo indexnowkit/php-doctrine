@@ -6,7 +6,7 @@ submit nothing. Deletions are resolved before the row disappears.
 
 Doctrine ORM 2.19+ and 3.x, DBAL 3.x and 4.x, PHP 8.2+.
 
-[Русская версия](README.ru.md)
+[Русская версия](README.ru.md) · Issues and pull requests: [github.com/indexnowkit/php](https://github.com/indexnowkit/php/issues) (the `php-*` repositories are read-only splits)
 
 [![Packagist](https://img.shields.io/packagist/v/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
 [![Downloads](https://img.shields.io/packagist/dt/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
@@ -16,6 +16,19 @@ Doctrine ORM 2.19+ and 3.x, DBAL 3.x and 4.x, PHP 8.2+.
 
 **Symfony users: take [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — it wires all of this, adds the router
 bridge, the commands and the profiler panel. This package is for Doctrine without Symfony.
+
+## Why this over X
+
+Most IndexNow packages are a thin HTTP client: you collect the URLs, you call it, you read the answer. This family
+does the part that goes wrong in practice:
+
+- **Declared on the model** (`#[IndexNow]`) and submitted from the ORM hooks — no controller code to forget.
+- **After the commit**, not on flush: a rolled-back transaction announces nothing.
+- **Debounce** (10 minutes per URL, shared through your cache), **batches** of up to 10 000 URLs, one key per host from env.
+- **Answers handled**: 202 (key pending), 422, 429 with `Retry-After` back-off and a retry through your queue, 403 escalation.
+- **`check` and `explain`** in the Symfony bundle say what is wrong before the first submission and why a URL was or was not sent.
+- **One core** under the Symfony, Laravel, Yii2 and Doctrine adapters with a shared conformance suite: the same behaviour everywhere, documented once.
+
 
 ## Install
 
@@ -162,7 +175,7 @@ this reason.
 
 Public API of this package: the classes named in the changelog and the README, their constructor parameter names
 (pass optional arguments by name), and the DBAL middleware classes. The core's rules apply, including the
-"may grow" interfaces: [bc.md](https://github.com/indexnowkit/php-core/blob/main/docs/bc.md). Before 1.0 a minor
+"may grow" interfaces: [bc.md](https://github.com/indexnowkit/php-core/blob/main/docs/bc.md); what this package itself keeps stable: [docs/bc.md](docs/bc.md). Before 1.0 a minor
 version may break; every break is listed under "Changed" in [CHANGELOG.md](CHANGELOG.md) with the migration.
 
 ## Documentation

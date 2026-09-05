@@ -6,7 +6,7 @@
 
 Doctrine ORM 2.19+ и 3.x, DBAL 3.x и 4.x, PHP 8.2+.
 
-[English version](README.md)
+[English version](README.md) · Issues и pull requests: [github.com/indexnowkit/php](https://github.com/indexnowkit/php/issues) (репозитории `php-*` — read-only сплиты)
 
 [![Packagist](https://img.shields.io/packagist/v/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
 [![Downloads](https://img.shields.io/packagist/dt/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
@@ -16,6 +16,19 @@ Doctrine ORM 2.19+ и 3.x, DBAL 3.x и 4.x, PHP 8.2+.
 
 **Пользователям Symfony: берите [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — он собирает всё это сам,
 добавляет мост к роутеру, команды и панель профайлера. Этот пакет — для Doctrine без Symfony.
+
+## Почему это, а не X
+
+Большинство пакетов IndexNow — тонкий HTTP-клиент: URL собираете вы, вызываете вы, ответ читаете вы. Это семейство делает
+то, что на практике ломается:
+
+- **Объявлено на модели** (`#[IndexNow]`) и отправляется из хуков ORM — нет кода в контроллере, который можно забыть.
+- **После commit**, не на flush: откатившаяся транзакция ничего не объявляет.
+- **Дебаунс** (10 минут на URL, через ваш кэш), **батчи** до 10 000 URL, ключ на host из env.
+- **Ответы обработаны**: 202 (ключ проверяется), 422, 429 с `Retry-After` и повтором через вашу очередь, эскалация 403.
+- **`check` и `explain`** в Symfony-бандле говорят, что не так до первой отправки и почему URL ушёл или не ушёл.
+- **Одно ядро** под адаптерами Symfony, Laravel, Yii2 и Doctrine с общим conformance-набором: поведение одинаковое везде и описано один раз.
+
 
 ## Установка
 
@@ -161,7 +174,7 @@ route-правила; старая страница должна была быт
 
 Публичный API пакета: классы, названные в changelog и README, имена параметров их конструкторов (необязательные
 аргументы передавайте по имени) и классы DBAL-middleware. Действуют правила core, включая интерфейсы «may grow»:
-[bc.md](https://github.com/indexnowkit/php-core/blob/main/docs/bc.md). До 1.0 минорная версия может ломать
+[bc.md](https://github.com/indexnowkit/php-core/blob/main/docs/bc.md); что стабильно в самом пакете: [docs/bc.md](docs/bc.md). До 1.0 минорная версия может ломать
 совместимость; каждый такой случай перечислен в разделе «Changed» файла [CHANGELOG.md](CHANGELOG.md) вместе с
 миграцией.
 
