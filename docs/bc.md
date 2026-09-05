@@ -20,4 +20,4 @@ Not a contract: `Middleware\IndexNowDriver`, `Middleware\IndexNowConnection`, `M
 
 ## Pinning
 
-`composer require indexnowkit/doctrine:^0.4` gets every 0.4.x patch. Read the changelog before a minor.
+`composer require indexnowkit/doctrine:^0.5` gets every 0.5.x patch. Read the changelog before a minor.
