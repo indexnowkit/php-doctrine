@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace IndexNowKit\Doctrine\Tests;
 
-use IndexNowKit\Testing\ReadmeAssertions;
+use IndexNowKit\Testing\Conformance\ReadmeAssertions;
 use PHPUnit\Framework\TestCase;
 
 /**

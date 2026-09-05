@@ -30,12 +30,13 @@
     },
     "require": {
         "php": "^8.2",
-        "indexnowkit/core": "^0.6",
+        "indexnowkit/core": "^0.7",
         "doctrine/orm": "^2.19 || ^3.0",
         "doctrine/dbal": "^3.8 || ^4.0",
         "doctrine/event-manager": "^1.2 || ^2.0"
     },
     "require-dev": {
+        "indexnowkit/testing": "^0.1",
         "phpstan/phpstan": "^2.2.13",
         "phpstan/phpstan-strict-rules": "^2.0.12",
         "phpunit/phpunit": "^11.5",

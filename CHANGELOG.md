@@ -5,6 +5,12 @@ contain breaking changes, listed under "Changed".
 
 ## [Unreleased]
 
+### Changed
+
+- Requires core 0.7. The test suite requires `indexnowkit/testing ^0.1` (`require-dev`): `OrmConformanceTestCase` and
+  `ReadmeAssertions` moved there from the core (the kit keeps its FQCN; the assertions are
+  `Testing\Conformance\ReadmeAssertions`).
+
 ### Documentation
 
 - README: "Notes for AI assistants" (package, minimal complete snippet, verification, pitfalls across the adapters);
