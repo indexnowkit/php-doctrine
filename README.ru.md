@@ -180,6 +180,33 @@ route-правила; старая страница должна была быт
 совместимость; каждый такой случай перечислен в разделе «Changed» файла [CHANGELOG.md](CHANGELOG.md) вместе с
 миграцией.
 
+## Заметки для AI-ассистентов
+
+- Composer-пакет `indexnowkit/doctrine` (Doctrine ORM 2.19+/3, DBAL 3/4, поверх `indexnowkit/core`). В Symfony-приложении используйте `indexnowkit/symfony-bundle`, он подключает этот пакет.
+- Минимальный полный сниппет (все `use` на месте):
+
+```php
+use Doctrine\ORM\Mapping as ORM;
+use IndexNowKit\Attribute\{IndexNow, IndexNowDefaults};
+
+#[ORM\Entity]
+#[IndexNowDefaults(when: 'isPublished')]
+#[IndexNow(route: 'post_show', params: ['slug' => 'slug'])]   // a Symfony route, or resolver: 'post_url' without a router
+class Post { /* ORM columns, isPublished() */ }
+```
+
+- Проверка: с бандлом — `bin/console indexnow:check` и `bin/console indexnow:explain App\\Entity\\Post 1`; отдельно — `$indexNow->explain($post)` возвращает URL с правилом, которое их дало.
+- Ловушки:
+  - `dispatch: auto` есть в Symfony (`auto` | `messenger` | `sync` | `none`) и Yii2 (`auto` | `queue` | `sync` | `none`), в Laravel **нет** (`queue` | `sync` | `none`).
+  - Локали: `router.locales` в Laravel, `router.languages` в Yii2, `framework.enabled_locales` в Symfony; `locales: 'all'` у правила берёт этот список.
+  - `url:` — имя аксессора (метод или свойство), который возвращает URL; `urls:` — список литеральных URL. Литерал в `url:` не ставить.
+  - Строка в `when:` — аксессор, читаемый как truthy (`published`, `isPublished`). Строка статуса требует `Equals`: `when: new Equals('status', 'published')` (`IndexNowKit\Attribute\Param\Equals`).
+  - Ручная отправка: `submitEntity()` в Symfony, `submitModel()` в Laravel, `submitRecord()` в Yii2; команды — `indexnow:submit-entity`, `indexnow:submit-model`, `indexnow/submit-record`. Массовые запросы (`update()`, `DB::table()`, `updateAll()`) хуков не вызывают — отправляйте ими после.
+  - В Laravel два класса `IndexNowKit`: фасад `IndexNowKit\Laravel\Facades\IndexNowKit` и сервис ядра `IndexNowKit\IndexNowKit` (инжектится по типу). В Yii2 ядро — `Yii::$app->indexnow->kit()`.
+  - Вне production настроенный ключ с незаданным `dry_run` делает `check` красным (стейджинг отправил бы боевые URL): задайте там `dry_run: true`, либо явный `dry_run: false`, если отправка нарочно.
+  - Неизвестные ключи конфигурации дают warning при загрузке (опечатки вроде debounce.per_urls); список — `Config::OPTIONS` плюс ключи адаптера.
+
+
 ## Документация
 
 | | |
