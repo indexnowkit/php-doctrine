@@ -9,6 +9,7 @@ contain breaking changes, listed under "Changed".
 
 - README: "Notes for AI assistants" (package, minimal complete snippet, verification, pitfalls across the adapters);
   `ReadmeAiNotesTest` keeps it consistent with the commands and configuration keys.
+- `homepage` in composer.json points at the docs site (https://indexnowkit.github.io/php/).
 
 ## [0.4.0] — 2026-09-05
 
