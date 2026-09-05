@@ -3,6 +3,12 @@
     "description": "Doctrine ORM integration for IndexNow: #[IndexNow] attribute on entities, commit-safe URL submission via DBAL driver middleware.",
     "type": "library",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Igor Pinchuk",
+            "email": "i.pinchuk.work@gmail.com"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "keywords": [
@@ -11,7 +17,9 @@
         "doctrine-orm",
         "seo",
         "yandex",
-        "bing"
+        "bing",
+        "psr-18",
+        "psr-3"
     ],
     "homepage": "https://github.com/indexnowkit/php-doctrine",
     "support": {
@@ -22,7 +30,7 @@
     },
     "require": {
         "php": "^8.2",
-        "indexnowkit/core": "^0.5",
+        "indexnowkit/core": "^0.6",
         "doctrine/orm": "^2.19 || ^3.0",
         "doctrine/dbal": "^3.8 || ^4.0",
         "doctrine/event-manager": "^1.2 || ^2.0"
@@ -31,6 +39,7 @@
         "phpstan/phpstan": "^2.2.13",
         "phpstan/phpstan-strict-rules": "^2.0.12",
         "phpunit/phpunit": "^11.5",
+        "roave/security-advisories": "dev-latest",
         "symfony/cache": "^6.4 || ^7.0",
         "symfony/var-exporter": "^6.4 || ^7.0"
     },
@@ -52,11 +61,14 @@
         "ci:install:dbal3": "@composer update --no-interaction --prefer-dist --with doctrine/dbal:^3.8 --with doctrine/orm:^2.19"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.3.x-dev"
+            "dev-main": "0.4.x-dev"
         }
     }
 }

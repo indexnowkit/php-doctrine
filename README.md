@@ -12,7 +12,9 @@ Doctrine ORM 2.19+ and 3.x, DBAL 3.x and 4.x, PHP 8.2+.
 [![Downloads](https://img.shields.io/packagist/dt/indexnowkit/doctrine)](https://packagist.org/packages/indexnowkit/doctrine)
 [![CI](https://github.com/indexnowkit/php/actions/workflows/ci.yml/badge.svg)](https://github.com/indexnowkit/php/actions)
 [![Conformance](https://img.shields.io/badge/conformance-orm%2014%2F14-brightgreen)](https://github.com/indexnowkit/spec)
+![PHPStan](https://img.shields.io/badge/phpstan-level%209-4c1)
 ![PHP](https://img.shields.io/badge/php-%5E8.2-777bb4)
+[![License](https://img.shields.io/packagist/l/indexnowkit/doctrine)](LICENSE)
 
 **Symfony users: take [`indexnowkit/symfony-bundle`](https://github.com/indexnowkit/php/tree/main/packages/symfony-bundle)** — it wires all of this, adds the router
 bridge, the commands and the profiler panel. This package is for Doctrine without Symfony.
