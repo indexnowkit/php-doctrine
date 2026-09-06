@@ -3,6 +3,15 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.8.1] — Unreleased
+
+### Changed
+
+- `IndexNowListener` builds its `ObjectChangeHandler` with the facade's extractor as the third argument (core 0.12.0 makes
+  the extractor a required parameter); a `new AttributeUrlResolver($indexNow->attributes, $indexNow->extractor, ...)` in
+  your own wiring needs the same (README updated).
+- Requires `indexnowkit/core ^0.12`.
+
 ## [0.8.0] — 2026-09-07
 
 ### Changed

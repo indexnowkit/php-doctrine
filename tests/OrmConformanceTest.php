@@ -8,6 +8,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
+use IndexNowKit\Attribute\ParamExtractor;
 use IndexNowKit\Config;
 use IndexNowKit\Doctrine\IndexNowDoctrine;
 use IndexNowKit\Doctrine\Tests\Fixtures\BadAttribute;
@@ -43,7 +44,7 @@ final class OrmConformanceTest extends OrmConformanceTestCase
         $this->transport = new FakeTransport();
         $this->logger = new ArrayLogger();
         $this->indexNow = IndexNowKit::create(Config::fromArray(['key' => DoctrineTestCase::KEY, 'base_url' => 'https://www.example.com', 'debounce' => ['per_url' => 0]]), $this->transport, $this->logger);
-        $resolver = new AttributeUrlResolver($this->indexNow->attributes, new FakeRouter(), new ArrayResolverLocator());
+        $resolver = new AttributeUrlResolver($this->indexNow->attributes, ParamExtractor::plain(), new FakeRouter(), new ArrayResolverLocator());
         $wiring = new IndexNowDoctrine($this->indexNow, $resolver, $this->logger, autoFlush: false);
 
         $config = ORMSetup::createAttributeMetadataConfiguration([__DIR__ . '/Fixtures'], true);

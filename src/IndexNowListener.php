@@ -51,7 +51,7 @@ final class IndexNowListener
     ) {
         $this->changes = $resolver === null
             ? $indexNow->changes()
-            : new ObjectChangeHandler($indexNow->attributes, $resolver instanceof GuardedUrlResolver ? $resolver : new GuardedUrlResolver($resolver, $indexNow->attributes, $logger), $logger, $indexNow->extractor);
+            : new ObjectChangeHandler($indexNow->attributes, $resolver instanceof GuardedUrlResolver ? $resolver : new GuardedUrlResolver($resolver, $indexNow->attributes, $logger), $indexNow->extractor, $logger);
     }
 
     public function onFlush(OnFlushEventArgs $args): void

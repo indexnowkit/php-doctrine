@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace IndexNowKit\Doctrine\Tests;
 
+use IndexNowKit\Attribute\ParamExtractor;
 use IndexNowKit\Doctrine\IndexNowDoctrine;
 use IndexNowKit\Doctrine\IndexNowListener;
 use IndexNowKit\Doctrine\Tests\Fixtures\FakeRouter;
@@ -71,7 +72,7 @@ final class ListenerTest extends DoctrineTestCase
     #[TestDox('autoFlush=false -> URLs wait in the collector until IndexNowKit::flush()')]
     public function testCollectorWithoutAutoFlush(): void
     {
-        $wiring = new IndexNowDoctrine($this->indexNow, new AttributeUrlResolver($this->indexNow->attributes, new FakeRouter()), $this->logger, autoFlush: false);
+        $wiring = new IndexNowDoctrine($this->indexNow, new AttributeUrlResolver($this->indexNow->attributes, ParamExtractor::plain(), new FakeRouter()), $this->logger, autoFlush: false);
         $this->em->getEventManager()->removeEventListener(IndexNowListener::EVENTS, $this->wiring->listener);
         $wiring->registerListener($this->em);
 

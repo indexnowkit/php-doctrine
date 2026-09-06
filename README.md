@@ -51,6 +51,7 @@ $indexNow = IndexNowKit::create(Config::fromEnv(), logger: $logger);
 
 $resolver = new AttributeUrlResolver(
     $indexNow->attributes,
+    $indexNow->extractor,                            // the DSL alone: Doctrine entities are plain objects
     router: null,                                    // no framework router: see "Routes" below
     locator: new ArrayResolverLocator([
         'post_url' => fn (Post $post): string => '/posts/' . $post->slug,   // #[IndexNow(resolver: 'post_url')]
@@ -198,7 +199,7 @@ class Post { /* ORM columns, isPublished() */ }
 - Verify: with the bundle, `bin/console indexnow:check` and `bin/console indexnow:explain 'App\\Entity\\Post' 1`; standalone, `$indexNow->explain($post)` returns the resolved URLs with the rule that produced each.
 - Pitfalls:
   - `dispatch: auto` exists in Symfony (`auto` | `messenger` | `sync` | `none`) and Yii2 (`auto` | `queue` | `sync` | `none`), **not** in Laravel (`queue` | `sync` | `none`).
-  - Locales: `router.locales` in Laravel, `router.languages` in Yii2, `framework.enabled_locales` in Symfony; `locales: 'all'` on a rule uses that list.
+  - Locales: `router.locales` in Laravel and Yii2, `framework.enabled_locales` in Symfony; `locales: 'all'` on a rule uses that list.
   - `url:` names an accessor (method or property) that returns the URL; `urls:` is a list of literal URLs. Never put a literal in `url:`.
   - A string in `when:` is an accessor read as truthy (`published`, `isPublished`). A status string needs `Equals`: `when: new Equals('status', 'published')` (`IndexNowKit\Attribute\Param\Equals`).
   - Manual submission is `submitEntity()` in Symfony, `submitModel()` in Laravel, `submitRecord()` in Yii2; the commands are `indexnow:submit-entity`, `indexnow:submit-model`, `indexnow/submit-record`. Bulk queries (`update()`, `DB::table()`, `updateAll()`) fire no hooks: submit afterwards with those.
