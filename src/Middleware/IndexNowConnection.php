@@ -33,8 +33,11 @@ final class IndexNowConnection extends AbstractConnectionMiddleware
 
     public function rollBack(): void
     {
-        parent::rollBack();
-        $this->staging->discard($this->native());
+        try {
+            parent::rollBack();
+        } finally {
+            $this->staging->discard($this->native()); // a driver that throws on rollback must not leave the URLs for the next commit
+        }
     }
 
     public function exec(string $sql): int|string

@@ -3,6 +3,21 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.8.0] — Unreleased
+
+### Changed
+
+- **`Middleware\IndexNowConnection::rollBack()` discards the staged URLs in a `finally`** (DBAL 4 and 3): a driver that
+  threw on rollback left them staged, and the next successful commit on the same connection **submitted the URLs of the
+  rolled-back transaction**. On DBAL 3 a `commit()` returning `false` discards them too.
+- `IndexNowListener` accumulates a flush that another listener triggers inside `postFlush()` into the outer one instead
+  of resetting the outer flush's pending entities.
+- Requires `indexnowkit/core ^0.11`.
+
+### Added
+
+- `tests/CoreConformanceTest`: the C01–C20 kit against the graph the Doctrine wiring is built around, as the framework adapters run it.
+
 ## [0.7.1] — 2026-09-06
 
 ### Changed

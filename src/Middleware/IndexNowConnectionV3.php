@@ -28,17 +28,22 @@ final class IndexNowConnectionV3 extends AbstractConnectionMiddleware
 
             throw $e;
         }
-        $this->staging->commit($this->native());
+        if ($result) {
+            $this->staging->commit($this->native());
+        } else {
+            $this->staging->discard($this->native()); // DBAL 3 drivers may report a failed commit with false instead of an exception
+        }
 
         return $result;
     }
 
     public function rollBack(): bool
     {
-        $result = parent::rollBack();
-        $this->staging->discard($this->native());
-
-        return $result;
+        try {
+            return parent::rollBack();
+        } finally {
+            $this->staging->discard($this->native()); // a driver that throws on rollback must not leave the URLs for the next commit
+        }
     }
 
     public function exec(string $sql): int

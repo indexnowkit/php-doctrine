@@ -36,6 +36,7 @@ final class IndexNowListener
     private array $resolved = [];
 
     private readonly ObjectChangeHandler $changes;
+    private bool $inFlush = false;
 
     /**
      * @param UrlResolverInterface|null $resolver  defaults to the facade's resolver
@@ -56,8 +57,12 @@ final class IndexNowListener
     public function onFlush(OnFlushEventArgs $args): void
     {
         $uow = self::entityManager($args)->getUnitOfWork();
-        $this->pending = [];
-        $this->resolved = [];
+        if (!$this->inFlush) {
+            // A fresh flush starts clean; a flush() another listener triggers inside postFlush() accumulates into the outer one instead.
+            $this->pending = [];
+            $this->resolved = [];
+        }
+        $this->inFlush = true;
 
         foreach ($uow->getScheduledEntityInsertions() as $entity) {
             $this->defer($entity, $this->changes->createdEvents($entity));
@@ -98,11 +103,13 @@ final class IndexNowListener
     public function postFlush(PostFlushEventArgs $args): void
     {
         $resolved = $this->resolved;
-        foreach ($this->pending as [$entity, $ruleEvent]) {
-            $resolved = [...$resolved, ...$this->changes->resolve($entity, $ruleEvent)];
-        }
+        $pending = $this->pending;
         $this->pending = [];
         $this->resolved = [];
+        $this->inFlush = false;
+        foreach ($pending as [$entity, $ruleEvent]) {
+            $resolved = [...$resolved, ...$this->changes->resolve($entity, $ruleEvent)];
+        }
 
         if ($resolved === []) {
             return;
