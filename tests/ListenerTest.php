@@ -10,6 +10,8 @@ use IndexNowKit\Doctrine\IndexNowListener;
 use IndexNowKit\Doctrine\Tests\Fixtures\FakeRouter;
 use IndexNowKit\Doctrine\Tests\Fixtures\Post;
 use IndexNowKit\Url\AttributeUrlResolver;
+use IndexNowKit\Url\GuardedUrlResolver;
+use IndexNowKit\Url\ObjectChangeHandler;
 use PHPUnit\Framework\Attributes\TestDox;
 use RuntimeException;
 
@@ -67,6 +69,49 @@ final class ListenerTest extends DoctrineTestCase
 
         self::assertCount(1, $this->transport->posts);
         self::assertCount(3, $this->sentUrls());
+    }
+
+    #[TestDox('built over a change-handler closure and a sink: nothing is built until a flush has something to classify, and the URLs go to the sink')]
+    public function testChangeHandlerClosureAndSink(): void
+    {
+        $built = 0;
+        $delivered = [];
+        $listener = new IndexNowListener(
+            function () use (&$built): ObjectChangeHandler {
+                ++$built;
+
+                return new ObjectChangeHandler(
+                    $this->indexNow->attributes,
+                    new GuardedUrlResolver(new AttributeUrlResolver($this->indexNow->attributes, ParamExtractor::plain(), new FakeRouter()), $this->indexNow->attributes, $this->logger),
+                    ParamExtractor::plain(),
+                    $this->logger,
+                );
+            },
+            null,
+            $this->wiring->staging,
+            $this->logger,
+            sink: static function (array $urls) use (&$delivered): void {
+                $delivered = [...$delivered, ...$urls];
+            },
+        );
+        $this->em->getEventManager()->removeEventListener(IndexNowListener::EVENTS, $this->wiring->listener);
+        $this->em->getEventManager()->addEventListener(IndexNowListener::EVENTS, $listener);
+        $this->wiring->staging->setSink($listener->deliver(...));
+
+        self::assertSame(0, $built, 'the constructor asks for nothing: no facade, no change handler, no client');
+
+        $this->em->persist(new Post('lazy'));
+        $this->em->flush();
+
+        self::assertSame(1, $built);
+        self::assertSame(['https://www.example.com/posts/lazy'], $delivered, 'the sink replaces IndexNowKit::collect()');
+        self::assertSame([], $this->transport->posts, 'nothing went through the facade');
+
+        $this->em->persist(new Post('lazy-2'));
+        $this->em->flush();
+
+        self::assertSame(1, $built, 'the handler is built once and kept');
+        self::assertSame(['https://www.example.com/posts/lazy', 'https://www.example.com/posts/lazy-2'], $delivered);
     }
 
     #[TestDox('autoFlush=false -> URLs wait in the collector until IndexNowKit::flush()')]

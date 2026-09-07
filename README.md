@@ -79,6 +79,20 @@ create the `EntityManager`, then call `registerListener()`.
 `IndexNowDoctrine` exposes the three pieces it builds — `$wiring->staging`, `$wiring->listener`,
 `$wiring->middleware` — so a container can register them individually instead.
 
+A container that builds its graph lazily (`Adapter\Services` of the core) can hand the listener a closure and a sink
+instead of the facade, so registering the listener — and a request that writes nothing — builds no submitter, client
+or transport:
+
+```php
+$listener = new IndexNowListener(
+    fn(): ObjectChangeHandler => $services->changes(),   // built on the first flush that has something to classify
+    null,
+    $staging,
+    $logger,
+    sink: fn(array $urls) => $services->kit()->collect($urls),
+);
+```
+
 ## Declaring pages
 
 The `#[IndexNow]` attribute comes from the core and is repeatable: one rule per family of public URLs.

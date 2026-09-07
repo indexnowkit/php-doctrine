@@ -10,8 +10,8 @@ use IndexNowKit\Testing\FakeTransport;
 
 /**
  * The core conformance scenarios (C01–C20) against the facade the Doctrine wiring is built around: the protocol layer
- * (batching, dedup, status mapping, normalization) of the graph `DoctrineTestCase` assembles, as the three framework
- * adapters run it against theirs.
+ * (batching, dedup, status mapping, normalization) of the graph `DoctrineTestCase` assembles, as the framework
+ * adapters run it against theirs. The harness configures a second host, so C04 runs here too instead of being skipped.
  */
 final class CoreConformanceTest extends CoreConformanceTestCase
 {
@@ -30,5 +30,10 @@ final class CoreConformanceTest extends CoreConformanceTestCase
     protected function transport(): FakeTransport
     {
         return $this->harness->transport;
+    }
+
+    protected function secondHost(): string
+    {
+        return DoctrineHarness::SECOND_HOST;
     }
 }

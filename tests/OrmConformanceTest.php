@@ -140,7 +140,7 @@ final class OrmConformanceTest extends OrmConformanceTestCase
     protected function update(object $model, array $fields): void
     {
         foreach ($fields as $field => $value) {
-            $model->$field = $value; // @phpstan-ignore property.dynamicName
+            $model->$field = $value;
         }
         $this->em->flush();
     }
