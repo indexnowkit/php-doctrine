@@ -29,7 +29,7 @@ Doctrine ORM 2.19+ и 3.x, DBAL 3.x и 4.x, PHP 8.2+.
 - **Дебаунс** (10 минут на URL, через ваш кэш), **батчи** до 10 000 URL, ключ на host из env.
 - **Ответы обработаны**: 202 (ключ проверяется), 422, 429 с `Retry-After` и повтором через вашу очередь, эскалация 403.
 - **`check` и `explain`** в Symfony-бандле говорят, что не так до первой отправки и почему URL ушёл или не ушёл.
-- **Одно ядро** под адаптерами Symfony, Laravel, Yii2 и Doctrine с общим conformance-набором: поведение одинаковое везде и описано один раз.
+- **Одно ядро** под адаптерами Symfony, Laravel, Yii2, Yii3 и Doctrine с общим conformance-набором: поведение одинаковое везде и описано один раз.
 
 
 ## Установка
@@ -199,10 +199,10 @@ class Post { /* ORM columns, isPublished() */ }
 - Проверка: с бандлом — `bin/console indexnow:check` и `bin/console indexnow:explain 'App\\Entity\\Post' 1`; отдельно — `$indexNow->explain($post)` возвращает URL с правилом, которое их дало.
 - Ловушки:
   - `dispatch: auto` есть в Symfony (`auto` | `messenger` | `sync` | `none`) и Yii2 (`auto` | `queue` | `sync` | `none`), в Laravel **нет** (`queue` | `sync` | `none`).
-  - Локали: `router.locales` в Laravel и Yii2, `framework.enabled_locales` в Symfony; `locales: 'all'` у правила берёт этот список.
+  - Локали: `router.locales` в Laravel, Yii2 и Yii3, `framework.enabled_locales` в Symfony; `locales: 'all'` у правила берёт этот список.
   - `url:` — имя аксессора (метод или свойство), который возвращает URL; `urls:` — список литеральных URL. Литерал в `url:` не ставить.
   - Строка в `when:` — аксессор, читаемый как truthy (`published`, `isPublished`). Строка статуса требует `Equals`: `when: new Equals('status', 'published')` (`IndexNowKit\Attribute\Param\Equals`).
-  - Ручная отправка: `submitEntity()` в Symfony, `submitModel()` в Laravel, `submitRecord()` в Yii2; команды — `indexnow:submit-entity`, `indexnow:submit-model`, `indexnow/submit-record`. Массовые запросы (`update()`, `DB::table()`, `updateAll()`) хуков не вызывают — отправляйте ими после.
+  - Ручная отправка: `submitEntity()` в Symfony, `submitModel()` в Laravel, `submitRecord()` в Yii2 и Yii3; команды — `indexnow:submit-entity`, `indexnow:submit-model`, `indexnow/submit-record` (Yii2), `indexnow:submit-record` (Yii3). Массовые запросы (`update()`, `DB::table()`, `updateAll()`) хуков не вызывают — отправляйте ими после.
   - В Laravel два класса `IndexNowKit`: фасад `IndexNowKit\Laravel\Facades\IndexNowKit` и сервис ядра `IndexNowKit\IndexNowKit` (инжектится по типу). В Yii2 ядро — `Yii::$app->indexnow->kit()`.
   - Вне production настроенный ключ с незаданным `dry_run` делает `check` красным (стейджинг отправил бы боевые URL): задайте там `dry_run: true`, либо явный `dry_run: false`, если отправка нарочно.
   - Неизвестные ключи конфигурации дают warning при загрузке (опечатки вроде debounce.per_urls); список — `Config::OPTIONS` плюс ключи адаптера.
