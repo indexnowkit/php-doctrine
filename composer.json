@@ -39,9 +39,9 @@
         "indexnowkit/testing": "^0.3",
         "phpstan/phpstan": "^2.2.13",
         "phpstan/phpstan-strict-rules": "^2.0.12",
-        "phpunit/phpunit": "^11.5",
+        "phpunit/phpunit": "^11.5 || ^12.0 || ^13.0",
         "roave/security-advisories": "dev-latest",
-        "symfony/cache": "^6.4 || ^7.0",
+        "symfony/cache": "^6.4 || ^7.0 || ^8.0",
         "symfony/var-exporter": "^6.4 || ^7.0"
     },
     "autoload": {
@@ -59,7 +59,8 @@
         "stan": "phpstan analyse --memory-limit=1G",
         "ci:install:highest": "@composer update --no-interaction --prefer-dist",
         "ci:install:lowest": "@composer update --no-interaction --prefer-dist --prefer-lowest --prefer-stable",
-        "ci:install:dbal3": "@composer update --no-interaction --prefer-dist --with doctrine/dbal:^3.8 --with doctrine/orm:^2.19"
+        "ci:install:dbal3": "@composer update --no-interaction --prefer-dist --with doctrine/dbal:^3.8 --with doctrine/orm:^2.19",
+        "ci:install:orm3dbal3": "@composer update --no-interaction --prefer-dist --with doctrine/dbal:^3.8"
     },
     "config": {
         "sort-packages": true,
@@ -69,7 +70,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.8.x-dev"
+            "dev-main": "0.9.x-dev"
         }
     }
 }

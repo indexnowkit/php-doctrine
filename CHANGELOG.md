@@ -3,10 +3,29 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
-## [0.8.2] — Unreleased
+## [0.9.0] — Unreleased
+
+
+`symfony/var-exporter` stays at `^6.4 || ^7.0` in `require-dev`: Doctrine ORM 3 builds its lazy ghosts with the
+var-exporter 6.4/7 API and refuses version 8 unless native lazy objects are enabled ("Symfony LazyGhost is not available").
+
+### Added
+
+- **`IndexNowListener` can be built over a change-handler closure and a sink** instead of the facade:
+  `new IndexNowListener(fn() => $services->changes(), null, $staging, $logger, sink: fn(array $urls) => $services->kit()->collect($urls))`.
+  The change handler is then built on the first flush that has something to classify, so an adapter with a lazy graph
+  (`Adapter\Services`) no longer builds submitter, client and transport just to register the listener. The facade
+  constructor is unchanged and keeps working, `$autoFlush` included.
 
 ### Changed
 
+- **`IndexNowListener::__construct()`: the first parameter is `$source` (`IndexNowKit|Closure`), formerly `$indexNow`.**
+  Positional calls are unchanged; a call passing it by name (`indexNow:`) renames the argument (the bundle did).
+- The test harness configures a second host with its own key, so conformance scenario C04 (URLs of two hosts -> one
+  POST per host under its own key) actually runs here instead of being skipped.
+- `composer ci:install:orm3dbal3`: the ORM 3 + DBAL 3 combination is declared supported but was never installed
+  anywhere (highest = ORM 3 + DBAL 4, lowest and `dbal3` = ORM 2 + DBAL 3). It uses `phpstan.dbal3.neon` like every
+  other DBAL 3 flavour — the config switches on the DBAL major, not the ORM one.
 - Requires `indexnowkit/core ^0.13`.
 
 ## [0.8.1] — 2026-09-07
