@@ -79,6 +79,19 @@ $wiring->registerListener($entityManager);
 `IndexNowDoctrine` открывает три собранных объекта — `$wiring->staging`, `$wiring->listener`,
 `$wiring->middleware`, — чтобы контейнер мог зарегистрировать их по отдельности.
 
+Контейнер, который собирает граф лениво (`Adapter\Services` ядра), может передать слушателю замыкание и sink вместо
+фасада: тогда ни регистрация слушателя, ни запрос без записей не строят ни submitter, ни клиент, ни транспорт:
+
+```php
+$listener = new IndexNowListener(
+    fn(): ObjectChangeHandler => $services->changes(),   // строится на первом flush, где есть что классифицировать
+    null,
+    $staging,
+    $logger,
+    sink: fn(array $urls) => $services->kit()->collect($urls),
+);
+```
+
 ## Объявление страниц
 
 Атрибут `#[IndexNow]` приходит из core и повторяем: одно правило на семейство публичных URL.

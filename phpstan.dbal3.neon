@@ -1,6 +1,7 @@
-# The DBAL 3 / ORM 2 installs (ci:install:dbal3 and ci:install:lowest): analyses Middleware\IndexNowConnectionV3 instead of the DBAL 4
-# IndexNowConnection; everything else is phpstan.neon.dist. No baseline: the code reads the ORM 2 arrays and the
-# ORM 3 mapping objects in a way both type sets accept.
+# Every DBAL 3 install, whichever ORM it carries (ci:install:dbal3 = ORM 2, ci:install:orm3dbal3 = ORM 3,
+# ci:install:lowest): analyses Middleware\IndexNowConnectionV3 instead of the DBAL 4 IndexNowConnection; everything
+# else is phpstan.neon.dist. The switch is the DBAL major, not the ORM one — no baseline: the code reads the ORM 2
+# arrays and the ORM 3 mapping objects in a way both type sets accept.
 includes:
     - phpstan.neon.dist
 parameters:
