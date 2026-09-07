@@ -3,6 +3,12 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
+## [0.8.2] — Unreleased
+
+### Changed
+
+- Requires `indexnowkit/core ^0.13`.
+
 ## [0.8.1] — 2026-09-07
 
 ### Changed
