@@ -3,7 +3,7 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed".
 
-## [0.9.0] — Unreleased
+## [0.9.0] — 2026-09-08
 
 
 `symfony/var-exporter` stays at `^6.4 || ^7.0` in `require-dev`: Doctrine ORM 3 builds its lazy ghosts with the
